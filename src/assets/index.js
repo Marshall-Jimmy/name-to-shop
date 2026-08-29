@@ -2,9 +2,11 @@
 import * as THREE from 'three/webgpu'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 
-const FURNITURE_BASE = '/assets/models/furniture-kit/Models/GLTF format/'
-const NATURE_BASE = '/assets/models/nature-kit/Models/GLTF format/'
-const TEX_BASE = '/assets/textures/'
+// BASE_URL 相对解析：dev server 根路径与 GitHub Pages 子路径均可用
+const B = import.meta.env.BASE_URL || '/'
+const FURNITURE_BASE = `${B}assets/models/furniture-kit/Models/GLTF format/`
+const NATURE_BASE = `${B}assets/models/nature-kit/Models/GLTF format/`
+const TEX_BASE = `${B}assets/textures/`
 
 // 室内会用到的家具子集（控制内存与加载时间）
 const FURNITURE_MODELS = [
@@ -115,8 +117,8 @@ export async function loadAssets(onProgress) {
 
   await Promise.all(tasks)
   assets.hdri = {
-    night: '/assets/hdri/dikhololo_night_1k.hdr',
-    sunset: '/assets/hdri/venice_sunset_1k.hdr',
+    night: `${B}assets/hdri/dikhololo_night_1k.hdr`,
+    sunset: `${B}assets/hdri/venice_sunset_1k.hdr`,
   }
   return assets
 }
