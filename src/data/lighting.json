@@ -1,0 +1,51 @@
+[
+  {
+    "id": "dawn", "name": "清晨", "weight": 15,
+    "skyTop": [215, 60, 45], "skyMid": [25, 55, 68], "skyHorizon": [40, 75, 78], "sunGlow": [35, 90, 72],
+    "sunColor": [35, 90, 78], "sunElev": 14, "sunAzim": 105, "sunIntensity": 2.6,
+    "ambientSky": [215, 40, 60], "ambientGround": [35, 25, 45], "ambientIntensity": 0.55,
+    "fogColor": [30, 45, 70], "fogDensity": 0.006, "exposure": 1.08, "stars": false, "clouds": true, "cloudTint": [30, 50, 85]
+  },
+  {
+    "id": "noon", "name": "正午", "weight": 13,
+    "skyTop": [212, 70, 45], "skyMid": [210, 55, 62], "skyHorizon": [205, 40, 80], "sunGlow": [50, 70, 88],
+    "sunColor": [50, 60, 96], "sunElev": 62, "sunAzim": 160, "sunIntensity": 3.2,
+    "ambientSky": [210, 45, 70], "ambientGround": [35, 20, 55], "ambientIntensity": 0.7,
+    "fogColor": [205, 30, 78], "fogDensity": 0.003, "exposure": 1.0, "stars": false, "clouds": true, "cloudTint": [210, 20, 95]
+  },
+  {
+    "id": "dusk", "name": "黄昏", "weight": 22,
+    "skyTop": [255, 45, 32], "skyMid": [25, 80, 58], "skyHorizon": [38, 95, 68], "sunGlow": [30, 100, 70],
+    "sunColor": [25, 95, 72], "sunElev": 8, "sunAzim": 235, "sunIntensity": 2.8,
+    "ambientSky": [270, 35, 45], "ambientGround": [25, 35, 40], "ambientIntensity": 0.5,
+    "fogColor": [25, 55, 60], "fogDensity": 0.008, "exposure": 1.12, "stars": false, "clouds": true, "cloudTint": [20, 70, 78]
+  },
+  {
+    "id": "night", "name": "夜晚", "weight": 18,
+    "skyTop": [232, 55, 10], "skyMid": [230, 45, 16], "skyHorizon": [225, 40, 26], "sunGlow": [220, 40, 70],
+    "sunColor": [220, 30, 82], "sunElev": 38, "sunAzim": 200, "sunIntensity": 0.7,
+    "ambientSky": [230, 40, 22], "ambientGround": [240, 25, 14], "ambientIntensity": 0.35,
+    "fogColor": [230, 40, 18], "fogDensity": 0.009, "exposure": 1.2, "stars": true, "clouds": false, "cloudTint": [230, 25, 30]
+  },
+  {
+    "id": "rainNight", "name": "雨夜", "weight": 10,
+    "skyTop": [225, 35, 8], "skyMid": [222, 30, 13], "skyHorizon": [218, 30, 22], "sunGlow": [210, 40, 55],
+    "sunColor": [215, 25, 70], "sunElev": 30, "sunAzim": 210, "sunIntensity": 0.55,
+    "ambientSky": [222, 35, 18], "ambientGround": [230, 20, 12], "ambientIntensity": 0.4,
+    "fogColor": [222, 35, 15], "fogDensity": 0.013, "exposure": 1.22, "stars": false, "clouds": true, "cloudTint": [222, 20, 24], "rain": true
+  },
+  {
+    "id": "snow", "name": "雪天", "weight": 8,
+    "skyTop": [215, 15, 62], "skyMid": [214, 12, 72], "skyHorizon": [212, 10, 84], "sunGlow": [210, 20, 88],
+    "sunColor": [210, 15, 90], "sunElev": 35, "sunAzim": 140, "sunIntensity": 1.4,
+    "ambientSky": [214, 15, 75], "ambientGround": [210, 10, 70], "ambientIntensity": 0.8,
+    "fogColor": [214, 12, 80], "fogDensity": 0.012, "exposure": 1.05, "stars": false, "clouds": true, "cloudTint": [214, 10, 92], "snow": true
+  },
+  {
+    "id": "cyberNight", "name": "赛博夜景", "weight": 12,
+    "skyTop": [265, 60, 8], "skyMid": [285, 55, 14], "skyHorizon": [315, 60, 22], "sunGlow": [320, 80, 45],
+    "sunColor": [310, 60, 60], "sunElev": 22, "sunAzim": 250, "sunIntensity": 0.9,
+    "ambientSky": [280, 50, 18], "ambientGround": [300, 40, 14], "ambientIntensity": 0.5,
+    "fogColor": [285, 55, 14], "fogDensity": 0.011, "exposure": 1.25, "stars": true, "clouds": false, "cloudTint": [285, 40, 26]
+  }
+]

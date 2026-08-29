@@ -1,0 +1,258 @@
+[
+  {
+    "id": "cyberpunk", "name": "赛博朋克", "weight": 8,
+    "palettes": [
+      { "main": [265, 70, 14], "wall": [250, 55, 18], "trim": [330, 95, 58], "accent": [190, 95, 55], "glow": [320, 100, 62], "ground": [260, 40, 10] },
+      { "main": [230, 60, 12], "wall": [220, 45, 16], "trim": [175, 95, 50], "accent": [300, 90, 60], "glow": [175, 100, 55], "ground": [230, 35, 9] },
+      { "main": [300, 55, 13], "wall": [280, 45, 17], "trim": [55, 100, 60], "accent": [190, 90, 55], "glow": [55, 100, 62], "ground": [280, 35, 10] },
+      { "main": [190, 55, 12], "wall": [200, 45, 15], "trim": [330, 90, 58], "accent": [260, 85, 62], "glow": [330, 100, 62], "ground": [200, 35, 9] }
+    ],
+    "materials": ["metal", "neon", "holo", "concrete"],
+    "lighting": ["cyberNight", "night", "rainNight"],
+    "roofBias": ["flatMarquee", "flatParapet", "folded"],
+    "signStyles": ["neonTube", "ledMatrix", "holo", "vertical"],
+    "decorBias": ["neonStrip", "graffiti", "acUnit", "vending", "holoAd"],
+    "groundBias": ["cyberGrid", "road"],
+    "facadeSkin": "cyber", "textureBias": ["concrete", "metal"]
+  },
+  {
+    "id": "steampunk", "name": "蒸汽朋克", "weight": 7,
+    "palettes": [
+      { "main": [25, 55, 30], "wall": [30, 45, 35], "trim": [40, 80, 55], "accent": [15, 70, 45], "glow": [45, 100, 60], "ground": [30, 30, 25] },
+      { "main": [0, 45, 25], "wall": [20, 40, 32], "trim": [42, 85, 58], "accent": [180, 30, 40], "glow": [42, 100, 62], "ground": [25, 25, 22] },
+      { "main": [210, 30, 30], "wall": [25, 35, 33], "trim": [40, 80, 55], "accent": [275, 30, 45], "glow": [45, 100, 60], "ground": [30, 25, 24] },
+      { "main": [70, 35, 32], "wall": [35, 40, 34], "trim": [40, 85, 58], "accent": [15, 75, 45], "glow": [48, 100, 58], "ground": [35, 28, 24] }
+    ],
+    "materials": ["metal", "wood", "brick"],
+    "lighting": ["dusk", "night", "dawn"],
+    "roofBias": ["gable", "folded", "flatParapet"],
+    "signStyles": ["box", "hanging", "marquee"],
+    "decorBias": ["barrels", "crates", "gasLamp", "gears"],
+    "groundBias": ["cobble", "plaza"],
+    "facadeSkin": "steampunk", "textureBias": ["metal", "brick"]
+  },
+  {
+    "id": "showa", "name": "日式昭和", "weight": 8,
+    "palettes": [
+      { "main": [45, 60, 82], "wall": [45, 40, 86], "trim": [185, 45, 40], "accent": [350, 65, 55], "glow": [350, 90, 62], "ground": [40, 15, 70] },
+      { "main": [40, 50, 84], "wall": [40, 35, 87], "trim": [175, 40, 42], "accent": [30, 70, 55], "glow": [30, 95, 60], "ground": [40, 15, 72] },
+      { "main": [0, 25, 80], "wall": [45, 35, 86], "trim": [200, 35, 45], "accent": [340, 60, 58], "glow": [345, 90, 62], "ground": [40, 12, 70] },
+      { "main": [50, 45, 80], "wall": [45, 40, 85], "trim": [160, 40, 40], "accent": [200, 50, 55], "glow": [195, 90, 60], "ground": [40, 15, 70] }
+    ],
+    "materials": ["wood", "fabric", "brick"],
+    "lighting": ["dusk", "dawn", "noon"],
+    "roofBias": ["japanese", "flatMarquee", "gable"],
+    "signStyles": ["vertical", "lantern", "box"],
+    "decorBias": ["lanternString", "vending", "bike", "crateStack"],
+    "groundBias": ["stonePath", "plaza"],
+    "facadeSkin": "showa", "textureBias": ["wood", "tile"]
+  },
+  {
+    "id": "nordic", "name": "北欧极简", "weight": 8,
+    "palettes": [
+      { "main": [35, 20, 90], "wall": [35, 15, 92], "trim": [35, 30, 45], "accent": [140, 35, 55], "glow": [140, 60, 55], "ground": [40, 10, 80] },
+      { "main": [30, 15, 88], "wall": [35, 12, 90], "trim": [210, 25, 40], "accent": [210, 45, 60], "glow": [210, 70, 60], "ground": [40, 10, 82] },
+      { "main": [40, 18, 87], "wall": [35, 14, 90], "trim": [25, 35, 45], "accent": [25, 60, 60], "glow": [25, 75, 58], "ground": [40, 12, 78] },
+      { "main": [35, 12, 91], "wall": [35, 10, 93], "trim": [150, 20, 40], "accent": [95, 35, 55], "glow": [95, 60, 55], "ground": [40, 10, 80] }
+    ],
+    "materials": ["wood", "concrete", "glass"],
+    "lighting": ["dawn", "noon", "dusk"],
+    "roofBias": ["flatParapet", "gable", "folded"],
+    "signStyles": ["box", "chalkboard", "round"],
+    "decorBias": ["minimalPlanter", "bench", "stringLights"],
+    "groundBias": ["plaza", "woodDeck"],
+    "facadeSkin": "nordic", "textureBias": ["wood", "plaster"]
+  },
+  {
+    "id": "chineseRetro", "name": "中式复古", "weight": 8,
+    "palettes": [
+      { "main": [5, 65, 40], "wall": [35, 40, 82], "trim": [40, 60, 45], "accent": [0, 70, 48], "glow": [45, 95, 60], "ground": [35, 20, 60] },
+      { "main": [15, 60, 38], "wall": [40, 35, 80], "trim": [40, 65, 48], "accent": [350, 65, 50], "glow": [40, 95, 62], "ground": [35, 18, 58] },
+      { "main": [40, 55, 42], "wall": [40, 30, 84], "trim": [5, 60, 45], "accent": [5, 70, 50], "glow": [45, 95, 58], "ground": [35, 20, 60] },
+      { "main": [210, 40, 35], "wall": [40, 35, 82], "trim": [40, 60, 45], "accent": [5, 65, 48], "glow": [45, 95, 60], "ground": [35, 20, 58] }
+    ],
+    "materials": ["wood", "brick", "fabric"],
+    "lighting": ["dusk", "dawn", "night"],
+    "roofBias": ["pagoda", "gable", "turret"],
+    "signStyles": ["vertical", "lantern", "box", "banner"],
+    "decorBias": ["lanterns", "plantedBarrel", "crateStack", "banner"],
+    "groundBias": ["stonePath", "cobble"],
+    "facadeSkin": "chinese", "textureBias": ["wood", "brick"]
+  },
+  {
+    "id": "hongkong", "name": "港风霓虹", "weight": 8,
+    "palettes": [
+      { "main": [150, 55, 18], "wall": [40, 20, 75], "trim": [45, 85, 55], "accent": [350, 85, 58], "glow": [50, 100, 62], "ground": [40, 10, 40] },
+      { "main": [200, 55, 20], "wall": [35, 20, 76], "trim": [45, 85, 55], "accent": [330, 85, 58], "glow": [330, 100, 62], "ground": [40, 10, 38] },
+      { "main": [350, 55, 22], "wall": [40, 18, 78], "trim": [45, 85, 55], "accent": [190, 85, 58], "glow": [190, 100, 60], "ground": [40, 10, 40] },
+      { "main": [45, 50, 25], "wall": [40, 22, 76], "trim": [50, 90, 58], "accent": [275, 80, 60], "glow": [50, 100, 62], "ground": [40, 10, 38] }
+    ],
+    "materials": ["brick", "metal", "neon"],
+    "lighting": ["night", "rainNight", "cyberNight"],
+    "roofBias": ["flatParapet", "flatMarquee"],
+    "signStyles": ["vertical", "neonTube", "blade", "ledMatrix"],
+    "decorBias": ["neonStrip", "lanterns", "vending", "signPost"],
+    "groundBias": ["road", "plaza"],
+    "facadeSkin": "hongkong", "textureBias": ["tile", "brick"]
+  },
+  {
+    "id": "classic", "name": "欧式古典", "weight": 7,
+    "palettes": [
+      { "main": [40, 45, 80], "wall": [42, 40, 82], "trim": [35, 60, 40], "accent": [350, 50, 45], "glow": [45, 90, 62], "ground": [40, 20, 62] },
+      { "main": [45, 40, 78], "wall": [40, 38, 80], "trim": [220, 30, 35], "accent": [220, 45, 50], "glow": [45, 90, 60], "ground": [40, 18, 60] },
+      { "main": [35, 45, 80], "wall": [40, 40, 82], "trim": [100, 30, 35], "accent": [100, 40, 45], "glow": [45, 90, 62], "ground": [40, 20, 60] },
+      { "main": [0, 30, 75], "wall": [40, 38, 81], "trim": [35, 55, 38], "accent": [275, 40, 50], "glow": [45, 90, 60], "ground": [40, 18, 62] }
+    ],
+    "materials": ["brick", "concrete", "wood"],
+    "lighting": ["dawn", "dusk", "noon"],
+    "roofBias": ["gable", "turret", "flatParapet"],
+    "signStyles": ["hanging", "box", "gold"],
+    "decorBias": ["statue", "flowerBox", "bench", "sconceLamp"],
+    "groundBias": ["cobble", "plaza"],
+    "facadeSkin": "classic", "textureBias": ["plaster", "brick"]
+  },
+  {
+    "id": "wasteland", "name": "废土", "weight": 7,
+    "palettes": [
+      { "main": [25, 30, 30], "wall": [30, 25, 35], "trim": [35, 35, 40], "accent": [70, 40, 45], "glow": [35, 90, 55], "ground": [35, 25, 42] },
+      { "main": [0, 25, 28], "wall": [30, 20, 33], "trim": [35, 30, 42], "accent": [60, 35, 42], "glow": [30, 85, 55], "ground": [35, 22, 40] },
+      { "main": [50, 20, 32], "wall": [35, 18, 34], "trim": [0, 30, 40], "accent": [80, 30, 40], "glow": [40, 90, 55], "ground": [40, 20, 42] },
+      { "main": [180, 15, 30], "wall": [35, 18, 33], "trim": [35, 30, 40], "accent": [25, 40, 45], "glow": [35, 90, 55], "ground": [35, 22, 40] }
+    ],
+    "materials": ["metal", "concrete", "fabric"],
+    "lighting": ["dusk", "noon", "snow"],
+    "roofBias": ["flatParapet", "gable", "tarp"],
+    "signStyles": ["box", "hanging", "chalkboard"],
+    "decorBias": ["barrels", "crates", "sandbags", "graffiti"],
+    "groundBias": ["sand", "road"],
+    "facadeSkin": "wasteland", "textureBias": ["metal", "concrete"]
+  },
+  {
+    "id": "macaron", "name": "马卡龙梦幻", "weight": 8,
+    "palettes": [
+      { "main": [330, 60, 84], "wall": [340, 50, 88], "trim": [270, 45, 72], "accent": [190, 55, 75], "glow": [330, 90, 72], "ground": [340, 30, 85] },
+      { "main": [265, 50, 84], "wall": [275, 45, 88], "trim": [200, 50, 75], "accent": [330, 55, 78], "glow": [265, 90, 72], "ground": [270, 30, 86] },
+      { "main": [160, 50, 82], "wall": [150, 45, 87], "trim": [50, 50, 78], "accent": [320, 50, 80], "glow": [160, 90, 70], "ground": [150, 30, 85] },
+      { "main": [40, 65, 85], "wall": [45, 55, 88], "trim": [340, 50, 78], "accent": [190, 50, 78], "glow": [45, 95, 72], "ground": [45, 30, 86] }
+    ],
+    "materials": ["fabric", "wood", "glass"],
+    "lighting": ["dawn", "noon", "dusk"],
+    "roofBias": ["dome", "gable", "pagoda"],
+    "signStyles": ["round", "box", "banner"],
+    "decorBias": ["flowerBox", "minimalPlanter", "stringLights", "umbrellaTable"],
+    "groundBias": ["grass", "plaza"],
+    "facadeSkin": "macaron", "textureBias": ["plaster", "wood"]
+  },
+  {
+    "id": "pixel", "name": "像素", "weight": 6,
+    "palettes": [
+      { "main": [220, 70, 45], "wall": [210, 60, 50], "trim": [50, 90, 55], "accent": [350, 80, 55], "glow": [50, 100, 60], "ground": [120, 50, 40] },
+      { "main": [120, 65, 42], "wall": [110, 55, 46], "trim": [40, 90, 55], "accent": [200, 75, 55], "glow": [40, 100, 60], "ground": [100, 45, 38] },
+      { "main": [350, 70, 48], "wall": [340, 60, 52], "trim": [210, 80, 60], "accent": [45, 90, 58], "glow": [45, 100, 62], "ground": [130, 45, 40] },
+      { "main": [280, 65, 45], "wall": [270, 55, 50], "trim": [50, 90, 55], "accent": [160, 75, 50], "glow": [50, 100, 60], "ground": [110, 50, 38] }
+    ],
+    "materials": ["brick", "wood"],
+    "lighting": ["noon", "dusk", "night"],
+    "roofBias": ["gable", "flatParapet", "folded"],
+    "signStyles": ["ledMatrix", "box", "marquee"],
+    "decorBias": ["vending", "crateStack", "statue"],
+    "groundBias": ["cyberGrid", "plaza"],
+    "facadeSkin": "pixel", "textureBias": ["brick", "wood"]
+  },
+  {
+    "id": "gothic", "name": "暗黑哥特", "weight": 6,
+    "palettes": [
+      { "main": [260, 20, 15], "wall": [260, 15, 18], "trim": [45, 40, 40], "accent": [345, 70, 45], "glow": [345, 90, 55], "ground": [260, 15, 15] },
+      { "main": [0, 15, 14], "wall": [250, 12, 17], "trim": [45, 45, 42], "accent": [275, 60, 48], "glow": [275, 95, 58], "ground": [250, 12, 14] },
+      { "main": [220, 25, 16], "wall": [230, 18, 19], "trim": [45, 40, 40], "accent": [160, 55, 42], "glow": [160, 90, 55], "ground": [230, 15, 15] },
+      { "main": [280, 20, 15], "wall": [270, 15, 18], "trim": [345, 45, 42], "accent": [45, 60, 48], "glow": [45, 95, 58], "ground": [270, 15, 14] }
+    ],
+    "materials": ["brick", "concrete", "metal"],
+    "lighting": ["night", "rainNight", "dusk"],
+    "roofBias": ["turret", "gable", "flatParapet"],
+    "signStyles": ["neonTube", "box", "hanging"],
+    "decorBias": ["candles", "statue", "raven"],
+    "groundBias": ["cobble", "plaza"],
+    "facadeSkin": "gothic", "textureBias": ["brick", "stone"]
+  },
+  {
+    "id": "cottagecore", "name": "田园", "weight": 7,
+    "palettes": [
+      { "main": [95, 35, 72], "wall": [40, 45, 84], "trim": [30, 45, 45], "accent": [350, 55, 62], "glow": [45, 90, 62], "ground": [100, 40, 55] },
+      { "main": [40, 45, 80], "wall": [95, 30, 80], "trim": [30, 50, 42], "accent": [95, 45, 55], "glow": [45, 90, 60], "ground": [100, 42, 55] },
+      { "main": [0, 35, 75], "wall": [40, 40, 84], "trim": [95, 35, 42], "accent": [45, 55, 60], "glow": [45, 90, 62], "ground": [100, 40, 55] },
+      { "main": [210, 25, 74], "wall": [40, 42, 84], "trim": [30, 45, 45], "accent": [350, 50, 62], "glow": [45, 90, 60], "ground": [100, 40, 55] }
+    ],
+    "materials": ["wood", "fabric", "brick"],
+    "lighting": ["dawn", "noon", "dusk"],
+    "roofBias": ["gable", "hip", "tarp"],
+    "signStyles": ["hanging", "box", "chalkboard"],
+    "decorBias": ["flowerBox", "minimalPlanter", "bench", "flowerBed"],
+    "groundBias": ["grass", "stonePath"],
+    "facadeSkin": "cottage", "textureBias": ["wood", "plaster"]
+  },
+  {
+    "id": "futurism", "name": "未来主义", "weight": 7,
+    "palettes": [
+      { "main": [210, 25, 88], "wall": [210, 20, 90], "trim": [195, 80, 60], "accent": [195, 90, 60], "glow": [190, 100, 60], "ground": [210, 15, 80] },
+      { "main": [0, 0, 92], "wall": [210, 15, 90], "trim": [265, 80, 65], "accent": [265, 90, 65], "glow": [265, 100, 65], "ground": [220, 12, 82] },
+      { "main": [180, 20, 88], "wall": [190, 18, 90], "trim": [45, 90, 62], "accent": [45, 95, 62], "glow": [45, 100, 62], "ground": [190, 15, 80] },
+      { "main": [150, 15, 88], "wall": [160, 15, 90], "trim": [195, 85, 60], "accent": [195, 90, 60], "glow": [160, 100, 58], "ground": [160, 12, 80] }
+    ],
+    "materials": ["metal", "glass", "holo"],
+    "lighting": ["noon", "night", "dusk"],
+    "roofBias": ["flatMarquee", "dome", "folded"],
+    "signStyles": ["holo", "neonTube", "ledMatrix"],
+    "decorBias": ["holoAd", "minimalPlanter", "acUnit"],
+    "groundBias": ["plaza", "cyberGrid"],
+    "facadeSkin": "futurism", "textureBias": ["metal", "concrete"]
+  },
+  {
+    "id": "zen", "name": "和风", "weight": 7,
+    "palettes": [
+      { "main": [35, 30, 84], "wall": [35, 25, 86], "trim": [30, 40, 40], "accent": [350, 40, 55], "glow": [350, 85, 60], "ground": [40, 15, 65] },
+      { "main": [0, 15, 82], "wall": [35, 22, 86], "trim": [210, 35, 42], "accent": [210, 45, 55], "glow": [210, 85, 60], "ground": [40, 15, 65] },
+      { "main": [40, 25, 83], "wall": [35, 20, 86], "trim": [95, 30, 40], "accent": [95, 40, 50], "glow": [45, 85, 60], "ground": [40, 15, 65] },
+      { "main": [210, 20, 82], "wall": [35, 22, 86], "trim": [35, 35, 42], "accent": [30, 55, 55], "glow": [30, 85, 60], "ground": [40, 15, 65] }
+    ],
+    "materials": ["wood", "fabric", "glass"],
+    "lighting": ["dawn", "dusk", "snow"],
+    "roofBias": ["japanese", "pagoda", "gable"],
+    "signStyles": ["vertical", "lantern", "box"],
+    "decorBias": ["lanternString", "bamboo", "stoneLantern"],
+    "groundBias": ["stonePath", "grass"],
+    "facadeSkin": "zen", "textureBias": ["wood", "plaster"]
+  },
+  {
+    "id": "loft", "name": "工业loft", "weight": 8,
+    "palettes": [
+      { "main": [15, 45, 38], "wall": [15, 50, 45], "trim": [0, 0, 20], "accent": [35, 80, 55], "glow": [35, 95, 60], "ground": [0, 0, 35] },
+      { "main": [0, 0, 22], "wall": [15, 45, 44], "trim": [0, 0, 18], "accent": [35, 85, 55], "glow": [35, 95, 62], "ground": [0, 0, 32] },
+      { "main": [210, 20, 35], "wall": [15, 45, 44], "trim": [0, 0, 20], "accent": [20, 80, 55], "glow": [20, 95, 60], "ground": [0, 0, 33] },
+      { "main": [35, 40, 40], "wall": [15, 48, 45], "trim": [0, 0, 20], "accent": [140, 45, 50], "glow": [45, 95, 60], "ground": [0, 0, 34] }
+    ],
+    "materials": ["brick", "metal", "concrete"],
+    "lighting": ["dusk", "night", "noon"],
+    "roofBias": ["flatParapet", "flatMarquee"],
+    "signStyles": ["box", "neonTube", "blade"],
+    "decorBias": ["crates", "acUnit", "stringLights", "graffiti"],
+    "groundBias": ["road", "plaza"],
+    "facadeSkin": "loft", "textureBias": ["brick", "metal"]
+  },
+  {
+    "id": "fairy", "name": "童话", "weight": 7,
+    "palettes": [
+      { "main": [280, 45, 78], "wall": [45, 50, 86], "trim": [45, 70, 60], "accent": [330, 60, 72], "glow": [50, 95, 70], "ground": [110, 40, 60] },
+      { "main": [330, 50, 80], "wall": [45, 45, 87], "trim": [45, 70, 62], "accent": [200, 55, 72], "glow": [45, 95, 70], "ground": [110, 40, 60] },
+      { "main": [45, 60, 82], "wall": [45, 45, 87], "trim": [280, 50, 65], "accent": [160, 50, 70], "glow": [50, 95, 70], "ground": [110, 40, 60] },
+      { "main": [160, 45, 76], "wall": [45, 45, 87], "trim": [45, 70, 62], "accent": [280, 50, 72], "glow": [50, 95, 70], "ground": [110, 40, 60] }
+    ],
+    "materials": ["wood", "fabric", "glass"],
+    "lighting": ["dawn", "dusk", "night"],
+    "roofBias": ["pagoda", "dome", "gable"],
+    "signStyles": ["round", "banner", "box"],
+    "decorBias": ["flowerBox", "stringLights", "mushroom", "statue"],
+    "groundBias": ["grass", "stonePath"],
+    "facadeSkin": "fairy", "textureBias": ["wood", "plaster"]
+  }
+]

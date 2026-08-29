@@ -1,0 +1,22 @@
+[
+  { "id": "burger", "name": "汉堡店", "en": "BURGER", "icon": "🍔", "slogans": ["现烤现卖", "大口满足", "只此一家"], "props": ["burger", "cup"], "signBias": ["box", "marquee"], "hue": [15, 45], "interior": "fastfood" },
+  { "id": "ramen", "name": "拉面馆", "en": "RAMEN", "icon": "🍜", "slogans": ["每日熬汤", "一碗入魂", "深夜营业"], "props": ["noodleBowl", "bottles"], "signBias": ["vertical", "lantern", "box"], "hue": [20, 50], "interior": "noodle" },
+  { "id": "coffee", "name": "咖啡馆", "en": "COFFEE", "icon": "☕", "slogans": ["今日烘焙", "慢下来", "手冲精品"], "props": ["coffeeCups", "cakes"], "signBias": ["round", "box", "chalkboard"], "hue": [20, 40], "interior": "cafe" },
+  { "id": "bubbletea", "name": "奶茶铺", "en": "BOBA", "icon": "🧋", "slogans": ["三分糖", "加珍珠", "快乐水"], "props": ["bubbleTea", "cup"], "signBias": ["round", "box"], "hue": [320, 350], "interior": "cafe" },
+  { "id": "bookstore", "name": "书店", "en": "BOOKS", "icon": "📚", "slogans": ["旧书新知", "深夜书房", "纸间旅行"], "props": ["books"], "signBias": ["hanging", "box", "chalkboard"], "hue": [180, 220], "interior": "books" },
+  { "id": "flower", "name": "花店", "en": "FLORIST", "icon": "🌷", "slogans": ["鲜花日达", "把春天带回家", "花好月圆"], "props": ["flowersVase", "flowers"], "signBias": ["round", "hanging", "box"], "hue": [100, 160], "interior": "flower" },
+  { "id": "barber", "name": "理发店", "en": "BARBER", "icon": "💈", "slogans": ["手艺30年", "修面剃头", "焕然一新"], "props": ["scissors"], "signBias": ["vertical", "blade", "box"], "hue": [200, 240], "interior": "barber" },
+  { "id": "grocery", "name": "杂货铺", "en": "MARKET", "icon": "🛒", "slogans": ["日用百货", "童叟无欺", "应有尽有"], "props": ["groceries", "cans"], "signBias": ["box", "banner"], "hue": [30, 60], "interior": "grocery" },
+  { "id": "pharmacy", "name": "药铺", "en": "HERBAL", "icon": "💊", "slogans": ["望闻问切", "百年老号", "对症下药"], "props": ["medicine", "bottles"], "signBias": ["vertical", "box", "lantern"], "hue": [0, 30], "interior": "apothecary" },
+  { "id": "cyberRepair", "name": "赛博修理铺", "en": "REPAIR", "icon": "🔧", "slogans": ["义体调试", "数据恢复", "主板重生"], "props": ["electronics"], "signBias": ["neonTube", "ledMatrix", "holo"], "hue": [180, 210], "interior": "workshop" },
+  { "id": "catCafe", "name": "猫咖", "en": "CAT CAFE", "icon": "🐈", "slogans": ["猫爪拿铁", "撸猫自由", "喵呜~"], "props": ["coffeeCups"], "signBias": ["round", "box"], "hue": [30, 50], "interior": "cafe", "npc": "cat" },
+  { "id": "vintage", "name": "古着屋", "en": "VINTAGE", "icon": "🧥", "slogans": ["绝版孤品", "岁月质感", "淘个宝贝"], "props": ["mannequin", "records"], "signBias": ["hanging", "box"], "hue": [350, 20], "interior": "vintage" },
+  { "id": "toyshop", "name": "玩具店", "en": "TOYS", "icon": "🧸", "slogans": ["童心永驻", "限量发售", "惊喜盲盒"], "props": ["toys"], "signBias": ["box", "marquee", "round"], "hue": [30, 60], "interior": "toys" },
+  { "id": "record", "name": "唱片行", "en": "RECORDS", "icon": "🎵", "slogans": ["黑胶复兴", "今日歌单", "循环播放"], "props": ["records"], "signBias": ["round", "box"], "hue": [260, 300], "interior": "records" },
+  { "id": "watchmaker", "name": "钟表行", "en": "WATCHES", "icon": "⏰", "slogans": ["分秒必争", "修旧如新", "时间工匠"], "props": ["clocks"], "signBias": ["box", "hanging"], "hue": [35, 55], "interior": "watch" },
+  { "id": "photo", "name": "照相馆", "en": "PHOTO", "icon": "📷", "slogans": ["立等可取", "定格瞬间", "证件美化"], "props": ["camera"], "signBias": ["box", "arrow"], "hue": [190, 220], "interior": "photo" },
+  { "id": "fortune", "name": "占卜馆", "en": "FORTUNE", "icon": "🔮", "slogans": ["塔罗指引", "今日运势", "天机可泄"], "props": ["tarot", "crystal"], "signBias": ["round", "neonTube"], "hue": [270, 300], "interior": "mystic" },
+  { "id": "potion", "name": "魔法药水铺", "en": "POTIONS", "icon": "⚗️", "slogans": ["魔药补给", "炼金小屋", "效果拔群"], "props": ["potions", "bottles"], "signBias": ["round", "hanging"], "hue": [130, 170], "interior": "mystic" },
+  { "id": "weapon", "name": "武器铺", "en": "SMITHY", "icon": "⚔️", "slogans": ["百年锻造", "削铁如泥", "冒险者首选"], "props": ["weapons"], "signBias": ["box", "banner", "blade"], "hue": [15, 40], "interior": "smithy" },
+  { "id": "noodle", "name": "面馆", "en": "NOODLES", "icon": "🍝", "slogans": ["手工现擀", "一碗管饱", "祖传秘方"], "props": ["noodleBowl", "bottles"], "signBias": ["vertical", "lantern", "box"], "hue": [25, 45], "interior": "noodle" }
+]

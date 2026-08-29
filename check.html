@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>自检台 · 名字成店</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #0c1018; color: #dfe6f2;
+      font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; font-size: 13px; }
+    #layout { display: flex; width: 100%; height: 100%; }
+    #side { width: 360px; min-width: 360px; height: 100%; overflow-y: auto; padding: 16px;
+      background: #10141f; border-right: 1px solid #1f2738; }
+    #main { flex: 1; height: 100%; display: flex; flex-direction: column; }
+    #viewport { flex: 1; position: relative; min-height: 0; }
+    #viewport canvas { display: block; }
+    #gridWrap { height: 46%; overflow-y: auto; padding: 14px; border-top: 1px solid #1f2738; background: #0c1018; }
+    h1 { font-size: 17px; margin-bottom: 4px; color: #ffd166; }
+    .sub { color: #7d8aa5; margin-bottom: 14px; }
+    .panel { background: #141a29; border: 1px solid #212b40; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+    .panel h3 { font-size: 12px; color: #8fb7ff; letter-spacing: 0.12em; margin-bottom: 8px; font-weight: 700; }
+    .row { display: flex; justify-content: space-between; padding: 3px 0; color: #c3cde0; }
+    .row b { color: #fff; font-weight: 600; }
+    .bar { height: 6px; background: #1c2436; border-radius: 3px; overflow: hidden; margin: 4px 0 8px; }
+    .bar > i { display: block; height: 100%; background: linear-gradient(90deg,#4f8cff,#6fe3b0); border-radius: 3px; }
+    .check { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; border-bottom: 1px dashed #1c2436; }
+    .check:last-child { border-bottom: none; }
+    .check .ic { width: 18px; height: 18px; border-radius: 50%; flex: none; margin-top: 1px;
+      display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .check.ok .ic { background: #123524; color: #6fe3b0; }
+    .check.bad .ic { background: #3a1420; color: #ff8896; }
+    .check .tx { flex: 1; }
+    .check .tx small { color: #7d8aa5; display: block; margin-top: 1px; }
+    .tagrow { display: flex; flex-wrap: wrap; gap: 5px; }
+    .tag { background: #1a2334; border: 1px solid #263250; border-radius: 5px;
+      padding: 2px 7px; color: #aebbd6; font-size: 11px; }
+    .tag b { color: #ffd166; font-weight: 600; }
+    #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(228px, 1fr)); gap: 12px; }
+    .card { background: #141a29; border: 1px solid #212b40; border-radius: 10px; overflow: hidden; cursor: pointer;
+      transition: transform .15s, border-color .15s; }
+    .card:hover { transform: translateY(-3px); border-color: #4f8cff; }
+    .card img { width: 100%; aspect-ratio: 8/5; object-fit: cover; display: block; background: #0a0d14; }
+    .card .info { padding: 8px 10px; }
+    .card .nm { font-weight: 700; color: #fff; font-size: 13px; }
+    .card .meta { color: #7d8aa5; font-size: 11px; margin-top: 2px; }
+    .card .rare { display: inline-block; font-size: 10px; font-weight: 700; border-radius: 4px; padding: 1px 6px; margin-top: 5px; }
+    .card.bad { border-color: #5c2333; }
+    #bar-top { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #10141f; border-bottom: 1px solid #1f2738; }
+    button { background: #22304d; color: #dfe6f2; border: 1px solid #31456e; border-radius: 8px;
+      padding: 7px 16px; font-size: 13px; cursor: pointer; font-family: inherit; }
+    button:hover { background: #2c3f66; }
+    button:disabled { opacity: 0.45; cursor: default; }
+    select { background: #1a2334; color: #dfe6f2; border: 1px solid #31456e; border-radius: 8px; padding: 6px 8px; font-family: inherit; }
+    #prog { flex: 1; height: 8px; background: #1c2436; border-radius: 4px; overflow: hidden; }
+    #prog > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg,#4f8cff,#6fe3b0); transition: width .2s; }
+    #status { color: #7d8aa5; min-width: 150px; text-align: right; }
+    #detail { position: fixed; right: 0; top: 0; width: 420px; height: 100%; background: #10141fee;
+      backdrop-filter: blur(8px); border-left: 1px solid #263250; padding: 18px; overflow-y: auto;
+      transform: translateX(100%); transition: transform .25s; z-index: 10; }
+    #detail.open { transform: none; }
+    #detail h2 { font-size: 18px; color: #ffd166; margin-bottom: 2px; }
+    #detail .close { position: absolute; right: 14px; top: 12px; }
+    .mf { font-family: Consolas, monospace; font-size: 11.5px; color: #9fb4d8; padding: 2px 0; border-bottom: 1px dashed #1c2436; }
+    .err { color: #ff8896; font-size: 12px; padding: 4px 0; }
+  </style>
+</head>
+<body>
+  <div id="layout">
+    <aside id="side">
+      <h1>名字成店 · 自检台</h1>
+      <div class="sub">批量种子验证：组件统计 / 强制构件 / 确定性 / 彩蛋</div>
+      <div id="checklist" class="panel"><h3>最终自检清单</h3><div id="checkBody"></div></div>
+      <div id="registry" class="panel"><h3>组件注册表</h3><div id="regBody"></div></div>
+      <div id="coverage" class="panel"><h3>批次覆盖</h3><div id="covBody"></div></div>
+      <div id="unused" class="panel"><h3>本批未出现（随机池校验）</h3><div id="unusedBody" class="tagrow"></div></div>
+    </aside>
+    <div id="main">
+      <div id="bar-top">
+        <select id="count">
+          <option value="24">24 家</option>
+          <option value="36" selected>36 家</option>
+          <option value="60">60 家</option>
+          <option value="96">96 家</option>
+        </select>
+        <button id="run">▶ 重新批量生成</button>
+        <div id="prog"><i></i></div>
+        <div id="status">待命</div>
+      </div>
+      <div id="viewport"></div>
+      <div id="gridWrap"><div id="grid"></div></div>
+    </div>
+  </div>
+  <div id="detail"></div>
+  <script type="module" src="/src/check-main.js"></script>
+</body>
+</html>

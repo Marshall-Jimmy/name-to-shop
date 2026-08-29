@@ -1,0 +1,6 @@
+# gitignore
+node_modules
+dist
+test/shots
+*.log
+.DS_Store

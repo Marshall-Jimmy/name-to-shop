@@ -1,0 +1,30 @@
+{
+  "animals": [
+    { "id": "rat", "char": "鼠", "glyph": "🐀", "subtitle": "机灵鼠 · 财源广进", "accent": [220, 60, 60] },
+    { "id": "ox", "char": "牛", "glyph": "🐂", "subtitle": "勤恳牛 · 稳扎稳打", "accent": [25, 60, 50] },
+    { "id": "tiger", "char": "虎", "glyph": "🐅", "subtitle": "威风虎 · 王者之气", "accent": [35, 80, 55] },
+    { "id": "rabbit", "char": "兔", "glyph": "🐇", "subtitle": "玉兔 · 温柔好运", "accent": [340, 55, 75] },
+    { "id": "dragon", "char": "龙", "glyph": "🐉", "subtitle": "金龙镇店 · 生意兴隆", "accent": [45, 90, 58] },
+    { "id": "snake", "char": "蛇", "glyph": "🐍", "subtitle": "灵蛇衔财 · 智慧之店", "accent": [140, 60, 50] },
+    { "id": "horse", "char": "马", "glyph": "🐎", "subtitle": "骏马奔腾 · 一日千里", "accent": [15, 65, 50] },
+    { "id": "goat", "char": "羊", "glyph": "🐐", "subtitle": "三阳开泰 · 和气生财", "accent": [40, 45, 70] },
+    { "id": "monkey", "char": "猴", "glyph": "🐒", "subtitle": "灵猴献瑞 · 聪明生财", "accent": [30, 70, 55] },
+    { "id": "rooster", "char": "鸡", "glyph": "🐓", "subtitle": "金鸡报晓 · 守时之店", "accent": [10, 75, 55] },
+    { "id": "dog", "char": "狗", "glyph": "🐕", "subtitle": "忠犬守店 · 旺财旺铺", "accent": [200, 50, 55] },
+    { "id": "pig", "char": "猪", "glyph": "🐖", "subtitle": "金猪纳福 · 富足满仓", "accent": [345, 50, 65] }
+  ],
+  "constellations": [
+    { "id": "aries", "name": "白羊座", "date": "3.21-4.19", "subtitle": "白羊能量 · 冲劲满满", "accent": [0, 70, 58] },
+    { "id": "taurus", "name": "金牛座", "date": "4.20-5.20", "subtitle": "金牛守护 · 财运稳稳", "accent": [35, 60, 55] },
+    { "id": "gemini", "name": "双子座", "date": "5.21-6.21", "subtitle": "双子星芒 · 灵感加倍", "accent": [55, 70, 60] },
+    { "id": "cancer", "name": "巨蟹座", "date": "6.22-7.22", "subtitle": "巨蟹温柔 · 宾至如归", "accent": [210, 55, 62] },
+    { "id": "leo", "name": "狮子座", "date": "7.23-8.22", "subtitle": "狮心闪耀 · 王者之店", "accent": [40, 85, 58] },
+    { "id": "virgo", "name": "处女座", "date": "8.23-9.22", "subtitle": "处女细致 · 完美主义", "accent": [150, 45, 55] },
+    { "id": "libra", "name": "天秤座", "date": "9.23-10.23", "subtitle": "天秤平衡 · 好评如潮", "accent": [190, 50, 60] },
+    { "id": "scorpio", "name": "天蝎座", "date": "10.24-11.22", "subtitle": "天蝎深潜 · 神秘引力", "accent": [270, 60, 55] },
+    { "id": "sagittarius", "name": "射手座", "date": "11.23-12.21", "subtitle": "射手之箭 · 一击即中", "accent": [25, 75, 55] },
+    { "id": "capricorn", "name": "摩羯座", "date": "12.22-1.19", "subtitle": "摩羯攀登 · 步步高升", "accent": [210, 30, 45] },
+    { "id": "aquarius", "name": "水瓶座", "date": "1.20-2.18", "subtitle": "水瓶奇思 · 脑洞大开", "accent": [185, 65, 58] },
+    { "id": "pisces", "name": "双鱼座", "date": "2.19-3.20", "subtitle": "双鱼浪漫 · 梦幻之店", "accent": [315, 55, 65] }
+  ]
+}

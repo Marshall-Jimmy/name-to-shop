@@ -1,0 +1,10 @@
+[
+  { "id": "wood", "name": "木", "weight": 20, "tex": "wood", "roughness": 0.72, "metalness": 0.02 },
+  { "id": "brick", "name": "砖", "weight": 20, "tex": "brick", "roughness": 0.85, "metalness": 0.0 },
+  { "id": "concrete", "name": "混凝土", "weight": 14, "tex": "concrete", "roughness": 0.9, "metalness": 0.0 },
+  { "id": "metal", "name": "金属", "weight": 14, "tex": "metal", "roughness": 0.38, "metalness": 0.85 },
+  { "id": "glass", "name": "玻璃", "weight": 8, "tex": "plaster", "roughness": 0.22, "metalness": 0.1, "glassy": true },
+  { "id": "fabric", "name": "布料", "weight": 10, "tex": "fabric", "roughness": 0.95, "metalness": 0.0 },
+  { "id": "neon", "name": "霓虹", "weight": 8, "tex": "metal", "roughness": 0.3, "metalness": 0.7, "emissiveBoost": 1.6 },
+  { "id": "holo", "name": "全息", "weight": 6, "tex": "holo", "roughness": 0.15, "metalness": 0.95, "iridescent": true }
+]

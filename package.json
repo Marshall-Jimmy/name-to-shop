@@ -1,0 +1,18 @@
+{
+  "name": "name-to-shop",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "名字成店 · 种子 3D 店铺生成器 — 输入任意字符串，生成专属会飞的 3D 店铺",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.185.0"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}
