@@ -9,10 +9,13 @@ import { clearTextureCache, disposeObject, insetPolygon, pointInPolygon, centroi
 import { Typewriter } from './ui/typewriter.js'
 import { HUD, randomName, dailyName } from './ui/hud.js'
 import { RarityCard, HoverLabel } from './ui/labels.js'
+import { computeTypingCameraPose } from './ui/typewriter-layout.js'
+import { resolveTypingKeyboardInput } from './ui/typewriter-input.js'
 import { Loader3D } from './ui/loader3d.js'
 import { panelTexture, roundedPanel, FONT, makePanelSprite } from './ui/sprites.js'
 import { tween, updateTweens, killTweens, flyCamera, Ease, debugTweens, hasCameraTween } from './core/tween.js'
 import { ensureAudio, sfx, setMuted, isMuted, flyHum } from './core/audio.js'
+import { flightAmplitudeAt } from './core/flight-transition.js'
 
 // ---------- 全局状态 ----------
 let engine, hud, typewriter, rarityCard, hoverLabel, loader, statsPlate
@@ -106,6 +109,7 @@ function enterTyping() {
   mode.inside = false
   mode.flying = false
   mode.transitioning = false
+  flightT = 0
   flyAmp = 0
   flyHum(false)
   killTweens()
@@ -114,7 +118,12 @@ function enterTyping() {
   hud.hideTop()
   hud.hideModal()
   disposeShop()
-  if (!typewriter) typewriter = new Typewriter()
+  if (!typewriter) {
+    typewriter = new Typewriter()
+    typewriter.onChange = name => {
+      if (hud.inputValue !== name) hud.inputValue = name
+    }
+  }
   engine.scene.add(typewriter.group)
   typewriter.setName('')
 
@@ -141,6 +150,7 @@ function enterTyping() {
     engine.scene.remove(statsPlate)
     statsPlate.material.map.dispose()
     statsPlate.material.dispose()
+    statsPlate.geometry.dispose()
   }
   statsPlate = makePanelSprite(tex, 0.72, 640 / 170)
   statsPlate.position.set(0, 3.1, -1.6)
@@ -148,11 +158,12 @@ function enterTyping() {
   engine.scene.add(statsPlate)
 
   engine.controls.enabled = true
-  engine.controls.minDistance = 3
-  engine.controls.maxDistance = 14
+  engine.controls.enablePan = false
+  engine.controls.minAzimuthAngle = -Math.PI * 0.18
+  engine.controls.maxAzimuthAngle = Math.PI * 0.18
+  engine.controls.minPolarAngle = Math.PI * 0.18
   engine.controls.maxPolarAngle = Math.PI * 0.495
-  flyCamera(engine.camera, engine.controls,
-    new THREE.Vector3(0, 2.9, 5.4), new THREE.Vector3(0, 1.1, 0), 1.4, Ease.inOutCubic)
+  setTypingCamera(true)
 
   hud.showInput('')
   hud.setChips([
@@ -165,12 +176,31 @@ function enterTyping() {
   ])
 }
 
+function setTypingCamera(animated = false) {
+  if (!engine) return
+  const pose = computeTypingCameraPose(engine.camera.aspect)
+  const position = new THREE.Vector3(...pose.position)
+  const target = new THREE.Vector3(...pose.target)
+  engine.controls.minDistance = pose.minDistance
+  engine.controls.maxDistance = pose.maxDistance
+  if (animated) {
+    flyCamera(engine.camera, engine.controls, position, target, 1.4, Ease.inOutCubic)
+  } else {
+    killTweens(tween => tween.tag === 'camera')
+    engine.camera.position.copy(position)
+    engine.controls.target.copy(target)
+    engine.camera.lookAt(target)
+    engine.controls.update()
+  }
+}
+
 // ---------- 开业 ----------
 function startShop(name) {
   state = 'shop'
   mode.inside = false
   mode.flying = false
   mode.transitioning = false
+  flightT = 0
   flyAmp = 0
   flyHum(false)
   killTweens()
@@ -190,6 +220,10 @@ function startShop(name) {
 
   engine.setEnvironment(dna.lighting, dna.rarityMeta.glow)
   engine.controls.enabled = true
+  engine.controls.enablePan = true
+  engine.controls.minAzimuthAngle = -Infinity
+  engine.controls.maxAzimuthAngle = Infinity
+  engine.controls.minPolarAngle = 0
   engine.controls.minDistance = 4
   engine.controls.maxDistance = 60
 
@@ -202,11 +236,12 @@ function startShop(name) {
   // 电影运镜：环绕 → 落定英雄机位
   const meta = shop.meta
   const hero = meta.cameraHero.clone()
-  const start = hero.clone().multiplyScalar(1.9).setY(hero.y + 7)
+  const heroTarget = meta.cameraTarget?.clone() || new THREE.Vector3(0, meta.bounds.h * 0.45, 0)
+  const start = hero.clone().sub(heroTarget).multiplyScalar(1.9).add(heroTarget).setY(hero.y + 7)
   engine.camera.position.copy(start)
-  engine.controls.target.set(0, meta.bounds.h * 0.4, 0)
+  engine.controls.target.copy(heroTarget)
   flyCamera(engine.camera, engine.controls, hero,
-    new THREE.Vector3(0, meta.bounds.h * 0.45, 0), 2.4, Ease.inOutCubic)
+    heroTarget, 2.4, Ease.inOutCubic)
 
   // HUD
   hud.showTop(dna)
@@ -284,10 +319,11 @@ function exitShop() {
   hud.setButtonState('door', false)
   const meta = shop.meta
   const hero = meta.cameraHero.clone()
+  const heroTarget = meta.cameraTarget?.clone() || new THREE.Vector3(0, meta.bounds.h * 0.45, 0)
   flyCamera(engine.camera, engine.controls,
     meta.exitPoint.clone(), meta.doorWorld.clone().setY(1.5), 1.0, Ease.inOutCubic, () => {
       flyCamera(engine.camera, engine.controls, hero,
-        new THREE.Vector3(0, meta.bounds.h * 0.45, 0), 1.4, Ease.inOutCubic, () => {
+        heroTarget, 1.4, Ease.inOutCubic, () => {
           mode.transitioning = false
           engine.controls.minDistance = 4
           engine.controls.maxDistance = 60
@@ -302,15 +338,52 @@ function toggleFly() {
   if (mode.inside) { hud.toast('在店里飞不起来，先出店', { color: '#ffd166' }); return }
   mode.flying = !mode.flying
   hud.setButtonState('fly', mode.flying)
+  killTweens(tw => tw.tag === 'flight')
+  const from = flyAmp
+  const to = mode.flying ? 1 : 0
   if (mode.flying) {
     sfx('flyUp'); flyHum(true)
     flightT = 0
-    tween({ dur: 2.2, ease: Ease.inOutSine, onUpdate: e => { flyAmp = e } })
+    startLocalFlightRamp(true, from, to)
     hud.toast('起飞！整栋店盘旋中', { color: '#9d8cff', sub: '相机自动跟随 · 再点一次降落' })
   } else {
     sfx('flyDown'); flyHum(false)
-    tween({ dur: 2.0, ease: Ease.inOutSine, onUpdate: e => { flyAmp = 1 - e } })
+    startLocalFlightRamp(false, from, to)
     hud.toast('平稳降落', { color: '#ffd166' })
+  }
+}
+
+function startLocalFlightRamp(flying, from = flyAmp, to = flying ? 1 : 0) {
+  killTweens(tw => tw.tag === 'flight')
+  tween({
+    dur: flying ? 2.2 : 2.0,
+    ease: Ease.inOutSine,
+    tag: 'flight',
+    onUpdate: e => { flyAmp = flightAmplitudeAt(from, to, e) },
+    onDone: () => { if (!mode.flying) flyAmp = 0 },
+  })
+}
+
+function updateLocalFlight(dt) {
+  if (state !== 'shop' || !shop) return
+  if (mode.flying || flyAmp > 0.001) {
+    flightT += dt * 0.55
+    const x = (Math.sin(flightT * 0.42) * 9 + Math.sin(flightT * 0.17) * 4) * flyAmp
+    const z = (Math.cos(flightT * 0.33) * 8 + Math.cos(flightT * 0.21) * 3.5) * flyAmp
+    const y = (12 + Math.sin(flightT * 0.5) * 2.2) * flyAmp
+    shop.shopRoot.position.set(x, y, z)
+    shop.shopRoot.rotation.set(
+      Math.cos(flightT * 0.3) * 0.03 * flyAmp,
+      0,
+      Math.sin(flightT * 0.4) * 0.05 * flyAmp,
+    )
+    const center = new THREE.Vector3(x, y + 2, z)
+    const delta = center.sub(engine.controls.target)
+    engine.controls.target.add(delta)
+    engine.camera.position.add(delta)
+  } else if (shop.shopRoot.position.lengthSq() > 1e-6) {
+    shop.shopRoot.position.set(0, 0, 0)
+    shop.shopRoot.rotation.set(0, 0, 0)
   }
 }
 
@@ -510,9 +583,9 @@ function bindPointer() {
     if (!hit) return
     if (hit.kind === 'tw') {
       typewriter.triggerPress(hit.obj)
-      typewriter.press(hit.obj)
+      const accepted = typewriter.press(hit.obj)
       sfx(hit.obj.userData.enter ? 'click' : 'type')
-      if (hit.obj.userData.enter && typewriter.confirm()) startShop(typewriter.name.trim())
+      if (hit.obj.userData.enter && accepted) startShop(typewriter.name.trim())
       return
     }
     if (hit.kind === 'interact') {
@@ -543,6 +616,22 @@ function bindKeyboard() {
       }
       return
     }
+    if (state === 'typing') {
+      const target = e.target
+      const editable = target instanceof HTMLElement && (
+        target.matches('input, textarea, select') || target.isContentEditable
+      )
+      const action = resolveTypingKeyboardInput({
+        key: e.key, altKey: e.altKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey, editable,
+      })
+      if (action) {
+        e.preventDefault()
+        if (action.type === 'character') typewriter.addChar(action.value)
+        else if (action.type === 'backspace') typewriter.backspace()
+        else if (action.type === 'confirm' && typewriter.confirm()) startShop(typewriter.name.trim())
+        return
+      }
+    }
     if (state === 'shop' && (e.key === 'f' || e.key === 'F')) toggleFly()
   })
 }
@@ -568,24 +657,6 @@ function tick(dt, t) {
       }
     }
 
-    // 飞行流场
-    if (mode.flying || flyAmp > 0.001) {
-      flightT += dt * 0.55
-      const x = (Math.sin(flightT * 0.42) * 9 + Math.sin(flightT * 0.17) * 4) * flyAmp
-      const z = (Math.cos(flightT * 0.33) * 8 + Math.cos(flightT * 0.21) * 3.5) * flyAmp
-      const y = (12 + Math.sin(flightT * 0.5) * 2.2) * flyAmp
-      shop.shopRoot.position.set(x, y, z)
-      shop.shopRoot.rotation.z = Math.sin(flightT * 0.4) * 0.05 * flyAmp
-      shop.shopRoot.rotation.x = Math.cos(flightT * 0.3) * 0.03 * flyAmp
-      const center = new THREE.Vector3(x, y + 2, z)
-      const delta = center.clone().sub(engine.controls.target)
-      engine.controls.target.add(delta)
-      engine.camera.position.add(delta)
-    } else if (shop.shopRoot.position.lengthSq() > 1e-6) {
-      shop.shopRoot.position.set(0, 0, 0)
-      shop.shopRoot.rotation.set(0, 0, 0)
-    }
-
     // 室内漫游约束
     if (mode.inside && !mode.transitioning) {
       const p = engine.camera.position
@@ -604,12 +675,16 @@ function tick(dt, t) {
       }
     }
   }
+  updateLocalFlight(dt)
 }
 
 // ---------- 入口 ----------
 boot().then(() => {
   bindPointer()
   bindKeyboard()
+  addEventListener('resize', () => {
+    if (state === 'typing') setTypingCamera(false)
+  })
   window.__nts = {
     engine, get shop() { return shop }, hud, state: () => state, mode: () => ({ ...mode }),
     startShop, enterTyping, toggleFly, enterShop, exitShop,
@@ -617,6 +692,7 @@ boot().then(() => {
     get camPos() { return engine.camera.position.toArray() },
     get target() { return engine.controls.target.toArray() },
     get ctl() { return { min: engine.controls.minDistance, max: engine.controls.maxDistance } },
+    flight: () => ({ time: flightT, amplitude: flyAmp }),
     tweens: () => debugTweens(),
   }
 }).catch(err => {

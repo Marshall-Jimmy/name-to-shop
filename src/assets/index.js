@@ -1,6 +1,7 @@
 // CC0 资产加载：Kenney GLTF 模型 + ambientCG PBR 贴图 + PolyHaven HDRI
 import * as THREE from 'three/webgpu'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { markObjectResourcesPersistent } from './model-library.js'
 
 // BASE_URL 相对解析：dev server 根路径与 GitHub Pages 子路径均可用
 const B = import.meta.env.BASE_URL || '/'
@@ -46,6 +47,7 @@ function loadTexture(url, srgb) {
       if (srgb) t.colorSpace = THREE.SRGBColorSpace
       t.wrapS = t.wrapT = THREE.RepeatWrapping
       t.anisotropy = 4
+      t.userData.keep = true
       resolve(t)
     }, undefined, () => resolve(null))
   })
@@ -72,7 +74,7 @@ function normalizeModel(obj) {
   obj.position.y -= box2.min.y
   const holder = new THREE.Group()
   holder.add(obj)
-  return holder
+  return markObjectResourcesPersistent(holder)
 }
 
 export async function loadAssets(onProgress) {

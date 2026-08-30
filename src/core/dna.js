@@ -6,6 +6,7 @@ import lightingPresets from '../data/lighting.json'
 import materials from '../data/materials.json'
 import zodiacData from '../data/zodiac.json'
 import eggsData from '../data/eggs.json'
+import { matchBusinessKeyword } from './business-keywords.js'
 
 const EGG_PALETTE_OVERRIDES = {
   gold:      { main: [45, 85, 55],  wall: [40, 60, 88],  trim: [45, 90, 62],  accent: [45, 95, 65],  glow: [48, 100, 68],  ground: [40, 35, 55], label: '金色暴富' },
@@ -69,19 +70,8 @@ export function rollShop(name) {
   const constellation = constellations[hash32(name + '#const') % 12]
 
   // 第一层：业态（名字含业态关键词优先）
-  const keywordMap = [
-    ['burger', /汉堡|堡|burger/i], ['ramen', /拉面|ramen/i], ['coffee', /咖啡|coffee|咖/i],
-    ['bubbletea', /奶茶|boba|珍珠/i], ['bookstore', /书|book/i], ['flower', /花|flor/i],
-    ['barber', /理发|剪|barber|发/i], ['grocery', /杂货|超市|market/i], ['pharmacy', /药|pharm/i],
-    ['cyberRepair', /修|repair|fix/i], ['catCafe', /猫咖|猫/i], ['vintage', /古着|vintage|古/i],
-    ['toyshop', /玩具|toy/i], ['record', /唱片|音乐|record/i], ['watchmaker', /钟|表|watch/i],
-    ['photo', /照|相|photo/i], ['fortune', /占卜|塔罗|fortune/i], ['potion', /药水|魔法|potion/i],
-    ['weapon', /武器|锻造|weapon|剑/i], ['noodle', /面|noodle/i],
-  ]
-  let business = null
-  for (const [id, re] of keywordMap) {
-    if (re.test(name)) { business = businesses.find(b => b.id === id); break }
-  }
+  const keywordBusinessId = matchBusinessKeyword(name)
+  let business = keywordBusinessId ? businesses.find(b => b.id === keywordBusinessId) : null
   if (!business) business = rng.pick(businesses)
 
   // 第二层：风格流派

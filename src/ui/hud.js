@@ -68,6 +68,7 @@ const CSS = `
 
 /* ---- 顶部铭牌 ---- */
 .nts-top { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 14px;
+  max-width: calc(50vw - 28px);
   display: flex; align-items: center; gap: 10px; padding: 10px 16px 10px 12px;
   background: rgba(13,17,29,.78); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255,255,255,.09); border-radius: 16px;
@@ -77,8 +78,10 @@ const CSS = `
 .nts-top .badge { min-width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 800; letter-spacing: .5px; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.35);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.3); }
-.nts-top .nm { font-size: clamp(16px, 2.4vw, 21px); font-weight: 800; letter-spacing: .02em; }
-.nts-top .meta { font-size: 12px; color: #aab6cc; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52vw; }
+.nts-top > div:last-child { min-width: 0; }
+.nts-top .nm { font-size: clamp(16px, 2.4vw, 21px); font-weight: 800; letter-spacing: .02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nts-top .meta { font-size: 12px; color: #aab6cc; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
 /* ---- 底部操作坞 ---- */
 .nts-dock { position: absolute; left: 50%; transform: translateX(-50%) translateY(130%);
@@ -104,8 +107,8 @@ const CSS = `
 .nts-btn:hover .tip { opacity: 1; transform: translateX(-50%); }
 
 /* ---- 输入卡（typing）---- */
-.nts-input { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
-  transform: translateX(-50%) translateY(150%);
+.nts-input { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 126px);
+  transform: translateX(-50%) translateY(-22px) scale(.98);
   width: min(560px, calc(100vw - 28px));
   padding: 18px; border-radius: 22px;
   background: rgba(13,17,29,.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -134,8 +137,8 @@ const CSS = `
 .nts-chip:hover { border-color: rgba(255,209,102,.5); color: #ffe6a8; background: rgba(255,209,102,.08); }
 
 /* ---- Toast ---- */
-.nts-toasts { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%);
-  display: flex; flex-direction: column; align-items: center; gap: 8px; width: min(480px, calc(100vw - 24px)); }
+.nts-toasts { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); right: 14px;
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px; width: min(480px, calc(50vw - 28px)); }
 .nts-toast { display: flex; align-items: center; gap: 10px; max-width: 100%; padding: 10px 18px; border-radius: 14px;
   background: rgba(13,17,29,.92); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.1);
   box-shadow: 0 10px 34px rgba(0,0,0,.4);
@@ -199,15 +202,27 @@ const CSS = `
 .egg-cell .d { font-size: 11px; color: #8d99b3; margin-top: 1px; }
 
 @media (max-width: 640px) {
-  .nts-dock { gap: 0; padding: 6px; border-radius: 20px; max-width: calc(100vw - 16px); flex-wrap: wrap; justify-content: center; }
-  .nts-btn { width: 52px; height: 52px; }
+  .nts-dock { width: min(360px, calc(100vw - 16px)); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2px; padding: 6px; border-radius: 20px; }
+  .nts-dock .sep { display: none; }
+  .nts-btn { width: auto; min-width: 0; height: 52px; }
   .nts-btn .tip { display: none; }
-  .nts-top { max-width: calc(100vw - 90px); padding: 8px 12px; }
+  .nts-top { max-width: calc(100vw - 28px); padding: 8px 12px; }
   .nts-top .nm { font-size: 15px; }
-  .nts-input { padding: 14px; }
+  .nts-toasts { top: calc(env(safe-area-inset-top, 0px) + 104px); left: 14px; right: 14px; width: auto; }
+  .nts-toast { width: 100%; }
+  .nts-input { top: calc(env(safe-area-inset-top, 0px) + 112px); padding: 14px; }
   .nts-input input { height: 48px; font-size: 17px; }
   .nts-input .go { height: 48px; padding: 0 18px; }
   .dex-prog { flex-direction: column; gap: 7px; }
+}
+@media (max-height: 560px) and (min-width: 641px) {
+  .nts-input { left: 14px; top: calc(env(safe-area-inset-top, 0px) + 14px); width: min(420px, calc(50vw - 20px));
+    padding: 12px; transform: translateY(-18px) scale(.98); }
+  .nts-input.on { transform: none; }
+  .nts-input input, .nts-input .go { height: 46px; }
+  .nts-chips { margin-top: 8px; gap: 5px; }
+  .nts-chip { padding: 4px 9px; font-size: 11.5px; }
 }
 @media (hover: none) {
   .nts-btn:hover { background: transparent; color: #c6d2e6; }
@@ -248,13 +263,13 @@ export class HUD {
       <div class="nts-dock"></div>
       <div class="nts-input">
         <div class="row">
-          <input maxlength="16" placeholder="输入任何名字… 中文 / 英文 / 数字 / emoji" />
-          <button class="go">开业</button>
+          <input maxlength="16" aria-label="店铺名字" placeholder="输入任何名字… 中文 / 英文 / 数字 / emoji" />
+          <button class="go" type="button">开业</button>
         </div>
         <div class="nts-chips"></div>
       </div>
       <div class="nts-modal-bg"></div>
-      <div class="nts-modal"><div class="hd"><div class="ic"></div><h2></h2><button class="x">${svg('x', 18)}</button></div><div class="bd"></div></div>`
+      <div class="nts-modal"><div class="hd"><div class="ic"></div><h2></h2><button class="x" type="button" aria-label="关闭">${svg('x', 18)}</button></div><div class="bd"></div></div>`
     document.body.appendChild(root)
     this.root = root
     this.top = root.querySelector('.nts-top')
@@ -292,8 +307,10 @@ export class HUD {
     for (const b of BTNS) {
       if (b.sep) { const s = document.createElement('div'); s.className = 'sep'; this.dock.appendChild(s); continue }
       const el = document.createElement('button')
+      el.type = 'button'
       el.className = 'nts-btn' + (b.hero ? ' hero' : '')
-      el.innerHTML = `${svg(b.icon)}<span class="lb">${b.label}</span><span class="tip">${b.label}</span>`
+      el.setAttribute('aria-label', b.label)
+      el.innerHTML = `${svg(b.icon)}<span class="lb">${b.label}</span><span class="tip" aria-hidden="true">${b.label}</span>`
       el.onclick = () => this.onAction?.(b.id)
       this.dock.appendChild(el)
       this.btnEls.set(b.id, { el, cfg: b })
@@ -307,6 +324,7 @@ export class HUD {
     b.el.querySelector('svg').outerHTML = svg(alt && cfg.icon2 ? cfg.icon2 : cfg.icon)
     b.el.querySelector('.lb').textContent = alt && cfg.label2 ? cfg.label2 : cfg.label
     b.el.querySelector('.tip').textContent = alt && cfg.label2 ? cfg.label2 : cfg.label
+    b.el.setAttribute('aria-label', alt && cfg.label2 ? cfg.label2 : cfg.label)
   }
 
   _bindInput() {
@@ -327,8 +345,8 @@ export class HUD {
 
   shakeInput() {
     this.inputCard.animate(
-      [{ transform: 'translateX(-50%)' }, { transform: 'translateX(calc(-50% - 7px))' },
-       { transform: 'translateX(calc(-50% + 7px))' }, { transform: 'translateX(-50%)' }],
+      [{ translate: '0 0' }, { translate: '-7px 0' },
+       { translate: '7px 0' }, { translate: '0 0' }],
       { duration: 260, easing: 'ease-in-out' })
   }
 
@@ -343,6 +361,7 @@ export class HUD {
     this.chips.innerHTML = ''
     for (const c of list) {
       const el = document.createElement('button')
+      el.type = 'button'
       el.className = 'nts-chip'
       el.textContent = c.label
       el.onclick = () => this.onAction?.(c.action, c.value ?? c.label)
@@ -356,6 +375,7 @@ export class HUD {
     this.top.querySelector('.badge').textContent = dna.rarity
     this.top.querySelector('.nm').textContent = `${dna.name}的店`
     this.top.querySelector('.meta').textContent = `${dna.business.name} × ${dna.style.name} · ${dna.lighting.name}`
+    this.top.title = `${dna.name}的店 · ${dna.business.name} × ${dna.style.name} · ${dna.lighting.name}`
     this.top.classList.add('on')
   }
   hideTop() { this.top.classList.remove('on') }
@@ -407,6 +427,7 @@ export class HUD {
     } else {
       for (const e of [...entries].reverse().slice(0, 24)) {
         const el = document.createElement('button')
+        el.type = 'button'
         el.className = 'dex-item'
         const m = rm(e.rarity)
         el.innerHTML = `<div class="r" style="background:${m.g}">${e.rarity}</div>
