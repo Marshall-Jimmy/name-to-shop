@@ -3,6 +3,7 @@ import * as THREE from 'three/webgpu'
 import { panelTexture, roundedPanel, FONT } from './sprites.js'
 import { makeRng } from '../core/rng.js'
 import { sfx } from '../core/audio.js'
+import { computeFunctionKeyLayout, fitTextSize } from './typewriter-layout.js'
 
 const ROWS = ['1234567890', 'QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM']
 const KEY_W = 0.36, KEY_H = 0.1, KEY_D = 0.36, GAP = 0.048
@@ -79,11 +80,12 @@ export class Typewriter {
       const keyMesh = new THREE.Mesh(geo, keyBodyMat)
       keyMesh.castShadow = true
       kg.add(keyMesh)
+      const keyTexture = keyTopTexture(label, accent)
       const top = new THREE.Mesh(
         new THREE.PlaneGeometry(w * 0.94, KEY_D * 0.94),
         new THREE.MeshStandardMaterial({
-          map: keyTopTexture(label, accent), transparent: true, roughness: 0.55,
-          emissive: 0xffffff, emissiveMap: keyTopTexture(label, accent), emissiveIntensity: 0.22,
+          map: keyTexture, transparent: true, roughness: 0.55,
+          emissive: 0xffffff, emissiveMap: keyTexture, emissiveIntensity: 0.22,
         }),
       )
       top.rotation.x = -Math.PI / 2
@@ -97,7 +99,7 @@ export class Typewriter {
     }
 
     // 字母/数字行
-    let totalW = 10 * KEY_W + 9 * GAP
+    const totalW = 10 * KEY_W + 9 * GAP
     ROWS.forEach((row, ri) => {
       const rw = row.length * KEY_W + (row.length - 1) * GAP
       for (let i = 0; i < row.length; i++) {
@@ -112,10 +114,15 @@ export class Typewriter {
       k.userData.fnKey = true
       return k
     }
-    addFn('清空', -totalW / 2 + 0.5, 0.96, '#9fb4d8', () => this.setName(''), 'clear')
-    addFn('删除', -totalW / 2 + 1.56, 0.96, '#9fb4d8', () => this.backspace(), 'back')
-    addFn('骰子', -totalW / 2 + 2.62, 0.96, '#ffd166', () => this.rollName(), 'dice')
-    addFn('空格', 0.2, 1.7, '#9fb4d8', () => this.addChar(' '), 'space')
+    const actions = {
+      clear: () => this.setName(''),
+      back: () => this.backspace(),
+      dice: () => this.rollName(),
+      space: () => this.addChar(' '),
+    }
+    for (const item of computeFunctionKeyLayout(totalW)) {
+      addFn(item.label, item.x, item.width, item.id === 'dice' ? '#ffd166' : '#9fb4d8', actions[item.id], item.id)
+    }
     // 开业大按钮（右侧独立，不斜放，圆形）
     const enterGroup = new THREE.Group()
     const enterBase = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.5, 0.16, 32),
@@ -177,7 +184,9 @@ export class Typewriter {
   _drawDisplay() {
     const ctx = this.displayCanvas.getContext('2d')
     const W = 900, H = 220
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
     ctx.clearRect(0, 0, W, H)
+    ctx.save()
     roundedPanel(ctx, W - 8, H - 8, 26, {
       bg: 'rgba(10,16,28,0.92)', border: 'rgba(122,196,255,0.55)', borderWidth: 3,
     })
@@ -187,18 +196,23 @@ export class Typewriter {
     ctx.textBaseline = 'middle'
     ctx.fillText('YOUR NAME · 名字', 44, 56)
     const shown = this.name || ''
-    const size = shown.length > 14 ? 64 : shown.length > 9 ? 82 : 100
+    const label = shown || '输入一个名字…'
+    const size = fitTextSize(sizeCandidate => {
+      ctx.font = `800 ${sizeCandidate}px ${FONT}`
+      return ctx.measureText(label).width
+    }, W - 104)
     ctx.font = `800 ${size}px ${FONT}`
     ctx.fillStyle = shown ? '#ffffff' : 'rgba(160,175,200,0.4)'
     ctx.shadowColor = '#6fc2ff'; ctx.shadowBlur = 24
-    const label = shown || '输入一个名字…'
     ctx.fillText(label, 44, 138)
     // 光标
     if (Math.floor(performance.now() / 500) % 2 === 0) {
       const tw = ctx.measureText(label).width
+      ctx.shadowBlur = 0
       ctx.fillStyle = '#7ec8ff'
-      ctx.fillRect(50 + Math.min(tw, W - 120), 106, 8, 66)
+      ctx.fillRect(Math.min(44 + tw + 10, W - 28), 106, 8, 66)
     }
+    ctx.restore()
     this.displayTex.needsUpdate = true
   }
 
@@ -242,8 +256,9 @@ export class Typewriter {
 
   press(key) {
     const ud = key.userData
-    if (ud.fn) ud.fn()
-    else if (ud.key === 'k') this.addChar(ud.label)
+    if (ud.fn) return ud.fn()
+    if (ud.key === 'k') this.addChar(ud.label)
+    return true
   }
 
   update(dt, camera) {

@@ -23,6 +23,7 @@ export function skyGradientTexture(l) {
   tex.colorSpace = THREE.SRGBColorSpace
   tex.wrapS = THREE.ClampToEdgeWrapping
   tex.wrapT = THREE.ClampToEdgeWrapping
+  tex.userData.keep = true
   skyTexCache.set(key, tex)
   return tex
 }

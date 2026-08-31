@@ -15,6 +15,7 @@ import { createFlightRig } from './flight.js'
 import { createParticles } from './effects.js'
 import { createGround } from './ground.js'
 import { applyEggRoof, applyEggDecor } from './eggs3d.js'
+import { computeFacadeCameraPose, offsetFromFacade } from './facade-camera.js'
 
 const WALL_T = 0.28
 
@@ -31,17 +32,23 @@ export function computeFootprint(dna) {
       break
     }
     case 'rounded': {
-      const r = w * 0.16
-      const arc = (cx, cz, a0, a1) => {
+      const r = Math.min(w, d) * 0.18
+      const arc = (cx, cz, a0, a1, segments = 4) => {
         const out = []
-        for (let a = a0; a < a1; a += Math.PI / 8) out.push([cx + Math.cos(a) * r, cz + Math.sin(a) * r])
+        for (let i = 0; i <= segments; i++) {
+          const a = a0 + (a1 - a0) * i / segments
+          out.push([cx + Math.cos(a) * r, cz + Math.sin(a) * r])
+        }
         return out
       }
-      pts = [[-w / 2, d / 2], [w / 2, d / 2]]
-      pts.push(...arc(w / 2 - r, d / 2 - r, 0, Math.PI / 2))
-      pts.push(...arc(-w / 2 + r, d / 2 - r, Math.PI / 2, Math.PI))
-      pts.push([-w / 2, -d / 2 + r], ...arc(-w / 2 + r, -d / 2 + r, Math.PI, Math.PI * 1.5))
-      pts.push(...arc(w / 2 - r, -d / 2 + r, Math.PI * 1.5, Math.PI * 2))
+      // 逆时针依次绕四个角，角与角之间的隐式线段就是四条直边。
+      // 原实现从顶边跳到右上圆弧后又折回，导致 rounded 轮廓必然自交。
+      pts = [
+        ...arc(w / 2 - r, -d / 2 + r, -Math.PI / 2, 0),
+        ...arc(w / 2 - r, d / 2 - r, 0, Math.PI / 2),
+        ...arc(-w / 2 + r, d / 2 - r, Math.PI / 2, Math.PI),
+        ...arc(-w / 2 + r, -d / 2 + r, Math.PI, Math.PI * 1.5),
+      ]
       break
     }
     case 'hexagon': {
@@ -225,7 +232,9 @@ function buildSideWalls(ctx) {
     mat.map = cloneRepeat(ctx.materials.wallSide.map, len / 4, H / 4)
     const n = [-(p2[1] - p1[1]) / len, (p2[0] - p1[0]) / len]
     const w = box(len + WALL_T * 0.98, H, WALL_T, mat, {
-      p: [mid[0] - n[0] * WALL_T / 2, H / 2, mid[1] - n[1] * WALL_T / 2],
+      // computeFootprint 的点序为 CCW，左法线 n 指向室内。墙体必须占据
+      // 轮廓内侧，才能和同样向内挤出的地板、天花板与移动边界对齐。
+      p: [mid[0] + n[0] * WALL_T / 2, H / 2, mid[1] + n[1] * WALL_T / 2],
       r: [0, -theta, 0],
     })
     g.add(w)
@@ -359,13 +368,11 @@ export function buildShop(dna, assets) {
     ctx.valid = Object.values(checks).every(Boolean)
 
     // 门的世界坐标（相机飞入用）
-    const doorWorld = new THREE.Vector3(
-      fp.front.mid[0] + doorMidX * Math.cos(fp.front.theta),
-      1.2,
-      fp.front.mid[1] + doorMidX * Math.sin(fp.front.theta) + fp.front.normal[1] * 0.2
-    )
+    const doorXZ = offsetFromFacade(fp.front, doorMidX, 0.2)
+    const doorWorld = new THREE.Vector3(doorXZ.x, 1.2, doorXZ.z)
     const inward = new THREE.Vector3(-fp.front.normal[0], 0, -fp.front.normal[1])
     const c = centroid(fp.pts)
+    const heroPose = computeFacadeCameraPose(fp.front, fp.bbox, topY)
     const meta = {
       bounds: { w: fp.bbox.w, d: fp.bbox.d, h: topY + 0.35 },
       doorWorld,
@@ -374,7 +381,8 @@ export function buildShop(dna, assets) {
       interiorCenter: new THREE.Vector3(c.x, 1.5, c.z),
       roofTop: topY,
       flightAnchor: new THREE.Vector3(0, topY + 0.6, 0),
-      cameraHero: new THREE.Vector3(fp.bbox.w * 0.72, topY * 0.62 + 1.2, fp.bbox.d * 0.95 + 6.5),
+      cameraHero: new THREE.Vector3(heroPose.position.x, heroPose.position.y, heroPose.position.z),
+      cameraTarget: new THREE.Vector3(heroPose.target.x, heroPose.target.y, heroPose.target.z),
       shopName: dna.name,
     }
     return { shopRoot, groundRoot, meta, ctx, manifest, dna }
@@ -438,6 +446,7 @@ function buildFallbackShop(dna, assets) {
       roofTop: H + 2.2,
       flightAnchor: new THREE.Vector3(0, H + 2.8, 0),
       cameraHero: new THREE.Vector3(8, 4.6, 13),
+      cameraTarget: new THREE.Vector3(0, H * 0.45, 0),
       shopName: dna.name,
     },
   }

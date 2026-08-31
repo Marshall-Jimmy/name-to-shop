@@ -6,6 +6,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { createSkyDome, createSun, createStars, createClouds, sunDirection } from './sky.js'
 import { col } from '../gen/helpers.js'
 import { makeRng } from '../core/rng.js'
+import { getCachedEnvironment } from './environment-cache.js'
 
 const _v1 = /* @__PURE__ */ new THREE.Vector3()
 const _v2 = /* @__PURE__ */ new THREE.Vector3()
@@ -44,6 +45,7 @@ export class Engine {
     this.time = 0
     this.envGroup = new THREE.Group()
     this.scene.add(this.envGroup)
+    this._environmentCache = new Map()
     this._weather = null
   }
 
@@ -110,16 +112,19 @@ export class Engine {
   }
 
   setEnvironment(l, rarityGlow = 0) {
-    // 天空套件
+    // WebGPU 的渲染管线会暂时保留提交过的环境缓冲。光照预设只有固定几种，
+    // 因此缓存并复用整套环境，避免切换时销毁仍被管线引用的 GPU 资源。
+    const environment = getCachedEnvironment(
+      this._environmentCache,
+      l.id,
+      () => this._buildEnvironment(l),
+    )
     this.envGroup.clear()
-    this.envGroup.add(createSkyDome(l))
-    this.envGroup.add(createSun(l))
-    const stars = createStars(l)
-    if (stars) this.envGroup.add(stars)
-    const clouds = createClouds(l)
-    if (clouds) this.envGroup.add(clouds)
-    this.clouds = clouds
-    this.stars = stars
+    this.envGroup.add(environment.group)
+    this.clouds = environment.clouds
+    this.stars = environment.stars
+    this._weather = environment.weather
+    this._weatherData = environment.weatherData
 
     // 太阳
     const dir = sunDirection(l)
@@ -140,22 +145,30 @@ export class Engine {
     // Bloom 强度（稀有度提升，封顶避免招牌过曝不可读）
     this.bloomPass.strength.value = Math.min(0.68, 0.3 + rarityGlow * 0.22)
 
-    // 天气
-    this._clearWeather()
-    if (l.rain) this._makeWeather('rain', l)
-    if (l.snow) this._makeWeather('snow', l)
   }
 
-  _clearWeather() {
-    if (this._weather) {
-      this.envGroup.remove(this._weather)
-      this._weather.geometry.dispose()
-      this._weather.material.dispose()
-      this._weather = null
+  _buildEnvironment(l) {
+    const group = new THREE.Group()
+    group.add(createSkyDome(l), createSun(l))
+    const stars = createStars(l)
+    const clouds = createClouds(l)
+    if (stars) group.add(stars)
+    if (clouds) group.add(clouds)
+
+    const weatherKind = l.rain ? 'rain' : (l.snow ? 'snow' : null)
+    const weatherBundle = weatherKind ? this._createWeather(weatherKind, l) : null
+    if (weatherBundle) group.add(weatherBundle.object)
+
+    return {
+      group,
+      stars,
+      clouds,
+      weather: weatherBundle?.object || null,
+      weatherData: weatherBundle?.data || null,
     }
   }
 
-  _makeWeather(kind, l) {
+  _createWeather(kind, l) {
     const rng = makeRng('weather-' + kind)
     const N = kind === 'rain' ? 1200 : 900
     const pos = new Float32Array(N * 3)
@@ -181,9 +194,7 @@ export class Engine {
     const pts = new THREE.Points(geo, mat)
     pts.userData.noExport = true
     pts.frustumCulled = false
-    this.envGroup.add(pts)
-    this._weather = pts
-    this._weatherData = { vel, phase, kind }
+    return { object: pts, data: { vel, phase, kind } }
   }
 
   onTick(fn) { this.tickFns.push(fn) }

@@ -18,12 +18,15 @@ export function canvasTexture(key, w, h, draw, opts = {}) {
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping
   tex.anisotropy = 4
   tex.needsUpdate = true
+  tex.userData.cacheOwned = true
   texCache.set(key, tex)
   return tex
 }
 
 export function cloneRepeat(tex, rx, ry) {
   const t = tex.clone()
+  delete t.userData.cacheOwned
+  delete t.userData.keep
   t.needsUpdate = true
   t.repeat.set(rx, ry)
   return t
@@ -126,13 +129,44 @@ export function centroid(pts) {
   return { x: cx / (6 * a), z: cz / (6 * a) }
 }
 
-// 向内缩进多边形（简单顶点缩进，适合本项目的凸/近凸轮廓）
+// 沿各条边的内法线缩进多边形。不能简单把顶点推向质心：凹多边形的
+// 质心方向可能穿过轮廓，L 形店铺的内墙和移动边界因此会跑到室外。
 export function insetPolygon(pts, d) {
-  const c = centroid(pts)
-  return pts.map(([x, z]) => {
-    const dx = c.x - x, dz = c.z - z
-    const len = Math.hypot(dx, dz) || 1
-    return [x + (dx / len) * d, z + (dz / len) * d]
+  if (pts.length < 3 || d === 0) return pts.map(p => [...p])
+
+  let twiceArea = 0
+  for (let i = 0; i < pts.length; i++) {
+    const [x1, z1] = pts[i], [x2, z2] = pts[(i + 1) % pts.length]
+    twiceArea += x1 * z2 - x2 * z1
+  }
+  const inwardSide = twiceArea >= 0 ? 1 : -1
+
+  return pts.map((p, i) => {
+    const prev = pts[(i - 1 + pts.length) % pts.length]
+    const next = pts[(i + 1) % pts.length]
+    const prevLength = Math.hypot(p[0] - prev[0], p[1] - prev[1]) || 1
+    const nextLength = Math.hypot(next[0] - p[0], next[1] - p[1]) || 1
+    const prevDir = [(p[0] - prev[0]) / prevLength, (p[1] - prev[1]) / prevLength]
+    const nextDir = [(next[0] - p[0]) / nextLength, (next[1] - p[1]) / nextLength]
+    const prevNormal = [-prevDir[1] * inwardSide, prevDir[0] * inwardSide]
+    const nextNormal = [-nextDir[1] * inwardSide, nextDir[0] * inwardSide]
+    const prevOffset = [p[0] + prevNormal[0] * d, p[1] + prevNormal[1] * d]
+    const nextOffset = [p[0] + nextNormal[0] * d, p[1] + nextNormal[1] * d]
+    const cross = prevDir[0] * nextDir[1] - prevDir[1] * nextDir[0]
+
+    if (Math.abs(cross) > 1e-8) {
+      const dx = nextOffset[0] - prevOffset[0]
+      const dz = nextOffset[1] - prevOffset[1]
+      const t = (dx * nextDir[1] - dz * nextDir[0]) / cross
+      return [prevOffset[0] + prevDir[0] * t, prevOffset[1] + prevDir[1] * t]
+    }
+
+    // 相邻边近似共线时，两条偏移线没有稳定交点；平均法线保持连续。
+    const nx = prevNormal[0] + nextNormal[0]
+    const nz = prevNormal[1] + nextNormal[1]
+    const normalLength = Math.hypot(nx, nz)
+    if (normalLength < 1e-8) return prevOffset
+    return [p[0] + nx / normalLength * d, p[1] + nz / normalLength * d]
   })
 }
 
@@ -143,6 +177,44 @@ export function pointInPolygon(x, z, pts) {
     if (((zi > z) !== (zj > z)) && (x < (xj - xi) * (z - zi) / (zj - zi) + xi)) inside = !inside
   }
   return inside
+}
+
+function orient2d(a, b, c) {
+  return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+}
+
+function pointOnSegment(p, a, b, epsilon = 1e-8) {
+  return Math.abs(orient2d(a, b, p)) <= epsilon
+    && p[0] >= Math.min(a[0], b[0]) - epsilon && p[0] <= Math.max(a[0], b[0]) + epsilon
+    && p[1] >= Math.min(a[1], b[1]) - epsilon && p[1] <= Math.max(a[1], b[1]) + epsilon
+}
+
+function segmentsIntersect(a, b, c, d) {
+  const o1 = orient2d(a, b, c), o2 = orient2d(a, b, d)
+  const o3 = orient2d(c, d, a), o4 = orient2d(c, d, b)
+  if ((o1 > 0) !== (o2 > 0) && (o3 > 0) !== (o4 > 0)) return true
+  return pointOnSegment(c, a, b) || pointOnSegment(d, a, b)
+    || pointOnSegment(a, c, d) || pointOnSegment(b, c, d)
+}
+
+// 检查一个绕 Y 轴旋转的家具占地是否完整位于多边形内，而不只是中心点在内。
+// padding 会同时扩张宽度和深度，用作与墙面的安全间距。
+export function orientedBoxInPolygon(x, z, width, depth, rotation, pts, padding = 0) {
+  const hw = width / 2 + padding, hd = depth / 2 + padding
+  const cos = Math.cos(rotation), sin = Math.sin(rotation)
+  const corners = [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]].map(([lx, lz]) => [
+    x + lx * cos + lz * sin,
+    z - lx * sin + lz * cos,
+  ])
+
+  if (corners.some(p => !pointInPolygon(p[0], p[1], pts))) return false
+  for (let i = 0; i < corners.length; i++) {
+    const a = corners[i], b = corners[(i + 1) % corners.length]
+    for (let j = 0; j < pts.length; j++) {
+      if (segmentsIntersect(a, b, pts[j], pts[(j + 1) % pts.length])) return false
+    }
+  }
+  return true
 }
 
 // ---------- Canvas 绘制工具 ----------
@@ -199,6 +271,7 @@ export function tintModel(object, targetHue, satScale = 0.85, hueSpread = 26) {
       Math.min(0.95, hsl.s * satScale + 0.08),
       hsl.l
     )
+    delete nm.userData.keep
     nm.userData._tinted = true
     return nm
   }
@@ -211,13 +284,26 @@ export function tintModel(object, targetHue, satScale = 0.85, hueSpread = 26) {
 }
 
 export function disposeObject(root) {
+  const geometries = new Set()
+  const materials = new Set()
+  const textures = new Set()
   root.traverse(o => {
-    if (o.geometry) o.geometry.dispose()
+    if (o.geometry && !o.geometry.userData?.keep && !geometries.has(o.geometry)) {
+      geometries.add(o.geometry)
+      o.geometry.dispose()
+    }
     if (o.material) {
       const mats = Array.isArray(o.material) ? o.material : [o.material]
       for (const m of mats) {
-        for (const k of ['map', 'normalMap', 'roughnessMap', 'emissiveMap', 'metalnessMap', 'aoMap']) {
-          if (m[k] && m[k].dispose && !m[k].userData?.keep) m[k].dispose()
+        if (!m || materials.has(m)) continue
+        materials.add(m)
+        if (m.userData?.keep) continue
+        for (const k of ['map', 'normalMap', 'roughnessMap', 'emissiveMap', 'metalnessMap', 'aoMap', 'alphaMap', 'bumpMap', 'displacementMap', 'lightMap']) {
+          const texture = m[k]
+          if (texture?.dispose && !texture.userData?.keep && !texture.userData?.cacheOwned && !textures.has(texture)) {
+            textures.add(texture)
+            texture.dispose()
+          }
         }
         m.dispose()
       }

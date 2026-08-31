@@ -1,4 +1,4 @@
-// 外部装饰生成器库：风格装饰 + 全量彩蛋装饰（98 键全覆盖）。
+// 外部装饰生成器库：风格装饰 + 全量彩蛋装饰。
 // 策略：Kenney CC0 模型为主 + 参数化几何 + Canvas 贴图，绝不纯色块。
 import * as THREE from 'three/webgpu'
 import { reg } from './registry.js'
@@ -6,6 +6,7 @@ import {
   box, mesh, group, cyl, sphere, cone, torus, plane, canvasTexture, hsl, col,
   stdMat, glowMat, glassMat, tintModel,
 } from './helpers.js'
+import { findAssetModel } from '../assets/model-library.js'
 
 const FONT_STACK = '"PingFang SC","Microsoft YaHei","Noto Sans SC","Segoe UI Emoji",sans-serif'
 
@@ -140,7 +141,7 @@ function pedestal(ctx, h = 0.5, r = 0.55, mat = null) {
 
 // Kenney 模型快捷引用（已按高度归一化）
 function model(ctx, name, height = 1, tint = true) {
-  const tpl = ctx.assets?.models?.[name]
+  const tpl = findAssetModel(ctx.assets, name)
   if (!tpl) return null
   const m = tpl.clone(true)
   m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true } })
@@ -2230,6 +2231,58 @@ export const genNotebook = propGen('notebook', (ctx) => {
   g.add(cyl(0.015, 0.015, 0.3, stdMat({ color: 0x2c3a5a, roughness: 0.4 }), { p: [0.3, 0.1, 0.1], r: [1.2, 0.4, 0] }))
   return g
 })
+
+// 数据表中曾有一批彩蛋只声明了 key、没有注册生成器，命中时会被静默跳过。
+// 这里补成轻量但可辨识的门口纪念牌，确保每个已发布彩蛋至少有真实 3D 表现。
+const RECOVERED_EGG_PROPS = [
+  ['woodVine', '🌿', '根深叶茂'],
+  ['clayPots', '🏺', '陶罐小铺'],
+  ['rattanChair', '🪑', '藤椅一角'],
+  ['coffeeSet', '☕', '咖啡套装'],
+  ['dialogBubble', '💬', '有话直说'],
+  ['tvNoodle', '📺', '电子榨菜'],
+  ['gearWheel', '⚙', '齿轮之心'],
+  ['campBed', '⛺', '原地躺平'],
+  ['doubleSeat', '👥', '并肩而坐'],
+  ['cornerTable', '◩', '角落小桌'],
+  ['stageSpot', '🎭', '全场焦点'],
+  ['secretDoor', '🚪', '隐藏入口'],
+  ['freezerTag', '🍦', '雪糕刺客'],
+  ['longGown', '袍', '长衫先生'],
+  ['afkSign', 'Z', '店主 AFK'],
+  ['npcBadge', 'N', 'NPC 工牌'],
+  ['fuPlaque', '福', '福气临门'],
+  ['doubleHappiness', '囍', '双喜临门'],
+  ['peach', '🍑', '桃花运来'],
+  ['redThread', '∞', '月老红线'],
+  ['lightOrb', '✦', '灵光一现'],
+  ['suitcaseGlasses', '🕶', '出门旅行'],
+]
+
+export const genRecoveredEggProps = RECOVERED_EGG_PROPS.map(([name, glyph, label], index) =>
+  propGen(name, (ctx) => {
+    const g = group()
+    const hue = (ctx.dna.palette.glow[0] + index * 17) % 360
+    const baseMat = stdMat({ color: new THREE.Color().setHSL(hue / 360, 0.45, 0.28), metalness: 0.35, roughness: 0.5 })
+    g.add(pedestal(ctx, 0.22, 0.48, baseMat))
+
+    const post = cyl(0.035, 0.045, 0.78, baseMat, { p: [0, 0.58, 0] })
+    const icon = glyphPlate(ctx, `recovered-${name}`, glyph, 0.68, { emissive: 1.5 })
+    icon.position.set(0, 1.18, 0.02)
+    const caption = textPlate(ctx, `recovered-label-${name}`, label, 1.28, 0.34, {
+      bg: 'rgba(12,16,28,0.92)', border: 'rgba(255,255,255,0.22)',
+      color: '#f7f2df', glowColor: hsl(hue, 90, 68), size: 54, emissive: 0.9,
+    })
+    caption.position.set(0, 0.66, 0.04)
+    g.add(post, icon, caption)
+
+    ctx.animate.push({
+      t: ctx.rand.f(0, Math.PI * 2),
+      update(dt) { this.t += dt; icon.position.y = 1.18 + Math.sin(this.t * 1.6) * 0.045 },
+    })
+    return g
+  })
+)
 
 // ================= 扩充组件库（第二批 · 外部装饰） =================
 

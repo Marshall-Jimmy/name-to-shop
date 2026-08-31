@@ -5,7 +5,7 @@ import { rollShop, lightingPresets } from './core/dna.js'
 import { buildShop } from './gen/building.js'
 import { loadAssets } from './assets/index.js'
 import { registryStats, allGens } from './gen/registry.js'
-import { disposeObject, clearTextureCache } from './gen/helpers.js'
+import { disposeObject, clearTextureCache, insetPolygon, pointInPolygon } from './gen/helpers.js'
 import { makeRng } from './core/rng.js'
 
 const CORE_NAMES = [
@@ -50,26 +50,61 @@ const raf = () => Promise.race([
   new Promise(r => setTimeout(r, 120)),
 ])
 
-function disposeEnvGroup() {
-  engine.envGroup.traverse(o => {
-    o.geometry?.dispose?.()
-    const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []
-    for (const m of ms) { m.map?.dispose?.(); m.dispose?.() }
-  })
-}
-
-function copyThumb() {
+async function copyThumb() {
   const src = engine.renderer.domElement
   const c = document.createElement('canvas')
   c.width = 480; c.height = 300
-  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height)
-  return c.toDataURL('image/jpeg', 0.85)
+  const ctx = c.getContext('2d', { willReadFrequently: true })
+  // WebGPU 首次编译一批新材质时，提交后的前几帧仍可能是全黑交换帧。
+  // 过去自检会把这张黑图当作成功缩略图，从而掩盖真实渲染问题。
+  const presentFrames = count => new Promise(resolve => {
+    let frames = 0
+    engine.renderer.setAnimationLoop(() => {
+      engine.render()
+      if (++frames >= count) {
+        engine.renderer.setAnimationLoop(null)
+        resolve()
+      }
+    })
+  })
+  for (let attempt = 0; attempt < 8; attempt++) {
+    // WebGPURenderer 的正式动画循环会推进交换链；单独调用 render() 后立即
+    // 从 canvas 读取，在部分实现上只会读到尚未呈现的黑色缓冲。
+    await presentFrames(3)
+    const frame = await createImageBitmap(src)
+    ctx.clearRect(0, 0, c.width, c.height)
+    ctx.drawImage(frame, 0, 0, c.width, c.height)
+    frame.close()
+    const pixels = ctx.getImageData(0, 0, c.width, c.height).data
+    let litSamples = 0
+    for (let i = 0; i < pixels.length; i += 4 * 97) {
+      if (pixels[i] + pixels[i + 1] + pixels[i + 2] > 18) litSamples++
+    }
+    if (litSamples > 12) return { dataUrl: c.toDataURL('image/jpeg', 0.85), blank: false }
+  }
+  return { dataUrl: c.toDataURL('image/jpeg', 0.85), blank: true }
 }
 
 const RARE_COLORS = { N: '#8d99ae', R: '#4f8cff', SR: '#9d8cff', SSR: '#ffd166', UR: '#ff6b81' }
 
 function status(txt) { $('status').textContent = txt }
 function progress(p) { $('prog').firstElementChild.style.width = `${Math.round(p * 100)}%` }
+
+function footprintChecks(fp) {
+  const orient = (a, b, c) => (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+  let simple = true
+  for (let i = 0; i < fp.pts.length; i++) {
+    for (let j = i + 1; j < fp.pts.length; j++) {
+      if (Math.abs(i - j) <= 1 || (i === 0 && j === fp.pts.length - 1)) continue
+      const a = fp.pts[i], b = fp.pts[(i + 1) % fp.pts.length]
+      const c = fp.pts[j], d = fp.pts[(j + 1) % fp.pts.length]
+      if (orient(a, b, c) * orient(a, b, d) < 0 && orient(c, d, a) * orient(c, d, b) < 0) simple = false
+    }
+  }
+  const inner = insetPolygon(fp.pts, 0.8)
+  const insetContained = inner.every(([x, z]) => pointInPolygon(x, z, fp.pts))
+  return { footprintSimple: simple, insetContained }
+}
 
 async function runBatch(n) {
   if (running || !assets) return
@@ -112,23 +147,26 @@ async function runBatch(n) {
     }
 
     // 渲染缩略图
-    disposeEnvGroup()
     engine.setEnvironment(dna.lighting, dna.rarityMeta.glow)
     engine.scene.add(shop.shopRoot, shop.groundRoot)
     const b = shop.meta.bounds
     engine.camera.position.copy(shop.meta.cameraHero)
-    engine.controls.target.set(0, b.h * 0.42, 0)
-    engine.camera.lookAt(0, b.h * 0.42, 0)
-    for (let k = 0; k < 3; k++) { engine.render(); await raf() }
-    const thumb = copyThumb()
+    const cameraTarget = shop.meta.cameraTarget || new THREE.Vector3(0, b.h * 0.42, 0)
+    engine.controls.target.copy(cameraTarget)
+    engine.camera.lookAt(cameraTarget)
+    const thumbResult = await copyThumb()
+    if (thumbResult.blank) errLog.push(`[render] ${name}: thumbnail remained blank after 24 presented frames`)
+    const thumb = thumbResult.dataUrl
     const errs = errLog.slice(errBefore)
     engine.scene.remove(shop.shopRoot, shop.groundRoot)
     if (i < names.length - 1) {
       disposeObject(shop.shopRoot); disposeObject(shop.groundRoot); clearTextureCache()
     }
 
+    const geometry = footprintChecks(shop.ctx.fp)
     results.push({
-      name, dna, valid: shop.ctx.valid, checks: shop.ctx.checks || {}, fallback: isFallback,
+      name, dna, valid: shop.ctx.valid && geometry.footprintSimple && geometry.insetContained,
+      checks: { ...(shop.ctx.checks || {}), ...geometry }, fallback: isFallback,
       manifest: shop.manifest, comps, thumb, errs, shop,
     })
     addCard(results[results.length - 1])
@@ -257,6 +295,8 @@ function renderStats({ usedComps, fallbacks, eggTotal, seen, determinism }) {
 }
 
 async function boot() {
+  const requestedCount = Number(new URLSearchParams(location.search).get('count'))
+  if ([24, 36, 60, 96].includes(requestedCount)) $('count').value = String(requestedCount)
   const rect = engineHost.getBoundingClientRect()
   engine = new Engine()
   await engine.init(engineHost, { w: Math.max(480, rect.width), h: Math.max(320, rect.height) })

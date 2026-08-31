@@ -3,7 +3,8 @@ import * as THREE from 'three/webgpu'
 import { reg } from './registry.js'
 import {
   box, mesh, group, cyl, sphere, cone, torus, plane, canvasTexture, col, hsl, stdMat,
-  glowMat, glassMat, extrudeUp, insetPolygon, pointInPolygon, roundRect,
+  glowMat, glassMat, extrudeUp, insetPolygon, orientedBoxInPolygon,
+  centroid, disposeObject, roundRect,
 } from './helpers.js'
 import { makeRng } from '../core/rng.js'
 
@@ -259,7 +260,7 @@ export const genIntShelfWall = reg('interior', 'intShelfWall', (ctx) => {
   }
   g.add(box(0.06, rows * 0.62 + 0.3, 0.06, wood, { p: [-0.8, 1.3 + (rows - 1) * 0.31, 0] }))
   g.add(box(0.06, rows * 0.62 + 0.3, 0.06, wood, { p: [0.8, 1.3 + (rows - 1) * 0.31, 0] }))
-  return { obj: g, size: [1.8, 0.5] }
+  return { obj: g, size: [1.8, 0.5], wall: true }
 })
 
 export const genIntShelfGrocery = reg('interior', 'intShelfGrocery', (ctx) => {
@@ -359,7 +360,7 @@ export const genIntTv = reg('interior', 'intTv', (ctx) => {
   let on = true
   g.userData.interact = { type: 'tv', label: '电视' }
   ctx.hoverables.push(g)
-  return { obj: g, size: [1.2, 0.4] }
+  return { obj: g, size: [1.2, 0.4], wall: true }
 })
 
 export const genIntLampCeiling = reg('interior', 'intLampCeiling', (ctx) => {
@@ -450,7 +451,7 @@ export const genIntArtWall = reg('interior', 'intArtWall', (ctx) => {
   }
   g.userData.interact = { type: 'art', label: '店内挂画' }
   ctx.hoverables.push(g)
-  return { obj: g, size: [n * 0.95, 0.2] }
+  return { obj: g, size: [n * 0.95, 0.2], wall: true, elevation: 1.55 }
 })
 
 export const genIntPlantCorner = reg('interior', 'intPlantCorner', (ctx) => {
@@ -477,7 +478,7 @@ export const genIntMirror = reg('interior', 'intMirror', (ctx) => {
   for (let i = 0; i < 6; i++) {
     g.add(sphere(0.045, glowMat(0xfff2cf, 2.6), { p: [-0.38 + i * 0.152, 2.2, 0.06], cast: false }))
   }
-  return { obj: hoverable(ctx, g, 'mirror', '理发镜'), size: [1.0, 0.3] }
+  return { obj: hoverable(ctx, g, 'mirror', '理发镜'), size: [1.0, 0.3], wall: true }
 })
 
 export const genIntBarberChair = reg('interior', 'intBarberChair', (ctx) => {
@@ -615,7 +616,7 @@ export const genIntClockWall = reg('interior', 'intClockWall', (ctx) => {
       }
     },
   })
-  return { obj: hoverable(ctx, g, 'clocks', '钟表墙'), size: [2.4, 0.3] }
+  return { obj: hoverable(ctx, g, 'clocks', '钟表墙'), size: [2.4, 0.3], wall: true }
 })
 
 export const genIntMystic = reg('interior', 'intMystic', (ctx) => {
@@ -1072,7 +1073,7 @@ export const genIntFireplace = reg('interior', 'intFireplace', (ctx) => {
     },
   })
   g.add(box(0.36, 0.03, 0.36, glowMat(0xffb347, 0.8), { p: [0.5, 1.57, 0.1], cast: false }))
-  return { obj: hoverable(ctx, g, 'fireplace', '壁炉 · 暖烘烘'), size: [1.7, 0.8] }
+  return { obj: hoverable(ctx, g, 'fireplace', '壁炉 · 暖烘烘'), size: [1.7, 0.8], wall: true }
 })
 
 // 保险柜：金属柜 + 转盘
@@ -1162,7 +1163,7 @@ export const genIntNeonInterior = reg('interior', 'intNeonInterior', (ctx) => {
   })
   g.add(plane(1.7, 0.42, mat, { cast: false }))
   g.add(cyl(0.02, 0.02, 0.9, stdMat({ color: 0x2a2f3a, roughness: 0.5, metalness: 0.6 }), { p: [0.7, 0.45, -0.02], seg: 8 }))
-  return { obj: hoverable(ctx, g, 'neonInt', `店内霓虹 · ${text.slice(0, 6)}`), size: [1.8, 0.5] }
+  return { obj: hoverable(ctx, g, 'neonInt', `店内霓虹 · ${text.slice(0, 6)}`), size: [1.8, 0.5], wall: true, elevation: 1.55 }
 })
 
 // 试衣间：隔断 + 帘 + 镜
@@ -1218,7 +1219,7 @@ export const genIntLadder = reg('interior', 'intLadder', (ctx) => {
     g.add(cyl(0.022, 0.022, 0.44, wood, { p: [0, 0.25 + i * 0.28, 0.11 + i * 0.02], r: [0, 0, Math.PI / 2], seg: 8 }))
   }
   g.add(box(0.05, 0.4, 0.06, wood, { p: [0, 1.9, -0.42], r: [-0.5, 0, 0] }))
-  return { obj: g, size: [0.6, 0.7] }
+  return { obj: g, size: [0.6, 0.7], wall: true }
 })
 
 // 躺椅角：休闲区（摸鱼专属）
@@ -1297,8 +1298,13 @@ export function buildInterior(ctx) {
   const floor = extrudeUp(inner, 0.08, ctx.materials.floorInt, { y: 0 })
   g.add(floor)
 
-  // 内部质心
-  const cent = inner.reduce((acc, p) => ({ x: acc.x + p[0] / inner.length, z: acc.z + p[1] / inner.length }), { x: 0, z: 0 })
+  // 面积质心不会被圆角轮廓的顶点密度拉偏。
+  const cent = centroid(inner)
+  const twiceArea = fp.pts.reduce((sum, p, i) => {
+    const next = fp.pts[(i + 1) % fp.pts.length]
+    return sum + p[0] * next[1] - next[0] * p[1]
+  }, 0)
+  const inwardSide = twiceArea >= 0 ? 1 : -1
 
   // 内墙包覆（四周薄墙 + 墙纸）
   const wpKind = rand.pick(['stripes', 'dots', 'diamond', 'plaid', 'grid', 'plain'])
@@ -1311,16 +1317,14 @@ export function buildInterior(ctx) {
     const len = Math.hypot(p2[0] - p1[0], p2[1] - p1[1])
     if (len < 0.8) continue
     const theta = Math.atan2(p2[1] - p1[1], p2[0] - p1[0])
-    const n = [-(p2[1] - p1[1]) / len, (p2[0] - p1[0]) / len]
+    const n = [-(p2[1] - p1[1]) / len * inwardSide, (p2[0] - p1[0]) / len * inwardSide]
     // 判断是否前边（有门的那边不包，留出入口）
     const isFront = Math.abs(mid[0] - fp.front.mid[0]) < 0.01 && Math.abs(mid[1] - fp.front.mid[1]) < 0.01
     if (isFront) continue
-    // 朝内法线（朝质心）
-    const toCent = [cent.x - mid[0], cent.z - mid[1]]
-    const inward = (n[0] * toCent[0] + n[1] * toCent[1]) > 0 ? n : [-n[0], -n[1]]
-    const ry = Math.atan2(inward[0], inward[1])
+    const ry = Math.atan2(n[0], n[1])
     const w = mesh(new THREE.PlaneGeometry(len, wpH), wpMat, {
-      p: [mid[0] - inward[0] * (ctx.t - 0.015), wpH / 2 + 0.02, mid[1] - inward[1] * (ctx.t - 0.015)],
+      // 墙体占据轮廓内侧，墙纸贴在内表面并略微前移，避免埋进墙里。
+      p: [mid[0] + n[0] * (ctx.t + 0.015), wpH / 2 + 0.02, mid[1] + n[1] * (ctx.t + 0.015)],
       r: [0, ry, 0],
     })
     w.receiveShadow = true
@@ -1340,58 +1344,91 @@ export function buildInterior(ctx) {
   ctx.manifest.push('interior:lampCeiling')
 
   // 天花板槽位：枝形吊灯 / 吊扇（随机其二）
+  const pickCeilingPoint = () => {
+    for (let i = 0; i < 24; i++) {
+      const x = rand.f(fp.bbox.minX + 0.8, fp.bbox.maxX - 0.8)
+      const z = rand.f(fp.bbox.minZ + 0.8, fp.bbox.maxZ - 0.8)
+      if (orientedBoxInPolygon(x, z, 0.7, 0.7, 0, inner, 0.08)) return { x, z }
+    }
+    return cent
+  }
   const ceilRoll = rand.f(0, 1)
   if (ceilRoll < 0.3) {
     const ch = genIntChandelier(ctx)
-    ch.obj.position.set(cent.x + rand.f(-1, 1), H - 0.12, cent.z + rand.f(-1, 1))
+    const p = pickCeilingPoint()
+    ch.obj.position.set(p.x, H - 0.12, p.z)
     g.add(ch.obj)
     ctx.manifest.push('interior:intChandelier')
   } else if (ceilRoll < 0.55) {
     const fan = genIntCeilingFan(ctx)
-    fan.obj.position.set(cent.x + rand.f(-1, 1), H - 0.1, cent.z + rand.f(-1, 1))
+    const p = pickCeilingPoint()
+    fan.obj.position.set(p.x, H - 0.1, p.z)
     g.add(fan.obj)
     ctx.manifest.push('interior:intCeilingFan')
   }
 
   // 后墙边（柜台线）：找离前边最远的边
-  let backEdge = null, bestDist = -Infinity
+  const backEdges = []
   for (let i = 0; i < fp.pts.length; i++) {
     const p1 = fp.pts[i], p2 = fp.pts[(i + 1) % fp.pts.length]
     const mid = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
     const len = Math.hypot(p2[0] - p1[0], p2[1] - p1[1])
     if (len < 2) continue
+    const isFront = Math.abs(mid[0] - fp.front.mid[0]) < 0.01 && Math.abs(mid[1] - fp.front.mid[1]) < 0.01
+    if (isFront) continue
     const dist = -(fp.front.normal[0] * mid[0] + fp.front.normal[1] * mid[1])
-    if (dist > bestDist) { bestDist = dist; backEdge = { p1, p2, mid, len, theta: Math.atan2(p2[1] - p1[1], p2[0] - p1[0]) } }
+    backEdges.push({ p1, p2, mid, len, dist, theta: Math.atan2(p2[1] - p1[1], p2[0] - p1[0]) })
   }
+  backEdges.sort((a, b) => b.dist - a.dist)
 
   // 业态布局
   const set = INTERIOR_SETS[ctx.dna.business.interior] || INTERIOR_SETS.cafe
   const placed = []
-  const canPlace = (x, z, w, d) => {
+  const projectedSize = (w, d, rotation) => {
+    const cos = Math.abs(Math.cos(rotation)), sin = Math.abs(Math.sin(rotation))
+    return [w * cos + d * sin, w * sin + d * cos]
+  }
+  const canPlace = (x, z, w, d, rotation = 0) => {
+    if (!orientedBoxInPolygon(x, z, w, d, rotation, inner, 0.06)) return false
+    const [pw, pd] = projectedSize(w, d, rotation)
     for (const [cx, cz, cw, cd] of placed) {
-      if (Math.abs(cx - x) < (cw + w) / 2 + 0.25 && Math.abs(cz - z) < (cd + d) / 2 + 0.25) return false
+      if (Math.abs(cx - x) < (cw + pw) / 2 + 0.25 && Math.abs(cz - z) < (cd + pd) / 2 + 0.25) return false
     }
     return true
   }
+  const rememberPlacement = (x, z, w, d, rotation = 0) => {
+    const [pw, pd] = projectedSize(w, d, rotation)
+    placed.push([x, z, pw, pd])
+  }
 
   // 1. 柜台沿后墙
-  if (backEdge) {
+  if (backEdges.length) {
     const counterGen = GEN_MAP[set.counter] || genIntCounterBar
+    const hoverStart = ctx.hoverables.length, animateStart = ctx.animate.length
     const counter = counterGen(ctx)
     const [cw, cd] = counter.size || [2.5, 0.9]
-    const n = [-(backEdge.p2[1] - backEdge.p1[1]) / backEdge.len, (backEdge.p2[0] - backEdge.p1[0]) / backEdge.len]
-    // n 朝内还是朝外？内侧 = 朝向质心
-    const toCent = [cent.x - backEdge.mid[0], cent.z - backEdge.mid[1]]
-    const inward = (n[0] * toCent[0] + n[1] * toCent[1]) > 0 ? n : [-n[0], -n[1]]
-    counter.obj.position.set(
-      backEdge.mid[0] + inward[0] * (cd / 2 + 0.12),
-      0.08,
-      backEdge.mid[1] + inward[1] * (cd / 2 + 0.12),
-    )
-    counter.obj.rotation.y = -backEdge.theta
-    g.add(counter.obj)
-    placed.push([counter.obj.position.x, counter.obj.position.z, cw, cd])
-    ctx.manifest.push(`interior:${set.counter}`)
+    let counterPose = null
+    for (const edge of backEdges) {
+      const n = [-(edge.p2[1] - edge.p1[1]) / edge.len * inwardSide, (edge.p2[0] - edge.p1[0]) / edge.len * inwardSide]
+      const rotation = -edge.theta
+      const x = edge.mid[0] + n[0] * (ctx.t + cd / 2 + 0.12)
+      const z = edge.mid[1] + n[1] * (ctx.t + cd / 2 + 0.12)
+      if (canPlace(x, z, cw, cd, rotation)) {
+        counterPose = { x, z, rotation }
+        break
+      }
+    }
+    if (counterPose) {
+      counter.obj.position.set(counterPose.x, 0.08, counterPose.z)
+      counter.obj.rotation.y = counterPose.rotation
+      g.add(counter.obj)
+      rememberPlacement(counterPose.x, counterPose.z, cw, cd, counterPose.rotation)
+      ctx.manifest.push(`interior:${set.counter}`)
+    } else {
+      ctx.hoverables.length = hoverStart
+      ctx.animate.length = animateStart
+      disposeObject(counter.obj)
+    }
   }
 
   // 2. 沿排布其余家具（在可用区域内撒点）
@@ -1400,22 +1437,39 @@ export function buildInterior(ctx) {
   const maxItems = Math.min(items.length, 5)
   for (let i = 0; i < maxItems; i++) {
     const gen = GEN_MAP[items[i]]
-    let ok = false, obj = null, size = [1.5, 1.5]
+    const hoverStart = ctx.hoverables.length, animateStart = ctx.animate.length
+    const obj = gen(ctx)
+    const size = obj.size || [1.5, 1.5]
+    let ok = false, rotation = 0, x = 0, z = 0
     for (let tryN = 0; tryN < 14 && !ok; tryN++) {
-      const x = rand.f(bbox.minX + 1.1, bbox.maxX - 1.1)
-      const z = rand.f(bbox.minZ + 1.1, bbox.maxZ - 1.6)
-      if (!pointInPolygon(x, z, inner)) continue
-      obj = gen(ctx)
-      size = obj.size || [1.5, 1.5]
-      if (!canPlace(x, z, size[0], size[1])) { obj = null; continue }
-      obj.obj.position.set(x, 0.08, z)
-      obj.obj.rotation.y = rand.pick([0, Math.PI / 2, Math.PI, -Math.PI / 2]) + rand.f(-0.1, 0.1)
+      if (obj.wall && backEdges.length) {
+        const edge = rand.pick(backEdges)
+        const usable = edge.len - size[0] - 0.5
+        if (usable <= 0) continue
+        const along = rand.f(-usable / 2, usable / 2)
+        const dir = [(edge.p2[0] - edge.p1[0]) / edge.len, (edge.p2[1] - edge.p1[1]) / edge.len]
+        const inward = [-dir[1] * inwardSide, dir[0] * inwardSide]
+        x = edge.mid[0] + dir[0] * along + inward[0] * (ctx.t + size[1] / 2 + 0.12)
+        z = edge.mid[1] + dir[1] * along + inward[1] * (ctx.t + size[1] / 2 + 0.12)
+        rotation = -edge.theta
+      } else {
+        x = rand.f(bbox.minX + 1.1, bbox.maxX - 1.1)
+        z = rand.f(bbox.minZ + 1.1, bbox.maxZ - 1.1)
+        rotation = rand.pick([0, Math.PI / 2, Math.PI, -Math.PI / 2]) + rand.f(-0.1, 0.1)
+      }
+      if (!canPlace(x, z, size[0], size[1], rotation)) continue
+      obj.obj.position.set(x, 0.08 + (obj.elevation || 0), z)
+      obj.obj.rotation.y = rotation
       ok = true
     }
-    if (ok && obj) {
+    if (ok) {
       g.add(obj.obj)
-      placed.push([obj.obj.position.x, obj.obj.position.z, size[0], size[1]])
+      rememberPlacement(x, z, size[0], size[1], rotation)
       ctx.manifest.push(`interior:${items[i]}`)
+    } else {
+      ctx.hoverables.length = hoverStart
+      ctx.animate.length = animateStart
+      disposeObject(obj.obj)
     }
   }
 
@@ -1425,12 +1479,12 @@ export function buildInterior(ctx) {
     for (let tryN = 0; tryN < 10; tryN++) {
       const x = rand.f(bbox.minX + 1, bbox.maxX - 1)
       const z = rand.f(bbox.minZ + 1, bbox.maxZ - 1)
-      if (!pointInPolygon(x, z, inner) || !canPlace(x, z, 0.9, 0.9)) continue
+      if (!canPlace(x, z, 0.9, 0.9)) continue
       const pet = genIntPet(ctx)
       pet.obj.position.set(x, 0.08, z)
       pet.obj.rotation.y = rand.f(0, Math.PI * 2)
       g.add(pet.obj)
-      placed.push([x, z, 0.9, 0.9])
+      rememberPlacement(x, z, 0.9, 0.9)
       ctx.manifest.push('interior:intPet')
       break
     }
